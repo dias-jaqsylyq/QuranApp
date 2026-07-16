@@ -5,8 +5,8 @@ const surahListCache = { data: null };
 const surahCache = new Map();
 const pageCache = new Map();
 
-const BASE = 'https://api.alquran.cloud/v1';
-const EDITIONS = 'quran-uthmani,en.transliteration,en.asad,ru.osmanov,kk.khalifahaltai';
+export const BASE = 'https://api.alquran.cloud/v1';
+export const EDITIONS = 'quran-uthmani,en.transliteration,en.asad,ru.osmanov,kk.khalifahaltai';
 // The /page endpoint doesn't support the combined editions/{list} shortcut the
 // /surah endpoint does, so each edition is fetched separately and zipped by
 // index (every edition shares the same per-page ayah count and order).

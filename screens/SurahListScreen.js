@@ -178,14 +178,17 @@ export default function SurahListScreen({ navigation }) {
         setLastRead(raw ? JSON.parse(raw) : null);
       });
       AsyncStorage.getItem('reading_mode').then(v => {
-        setReadingMode(v === 'page' ? 'page' : 'surah');
+        setReadingMode(v === 'page' || v === 'mushaf' ? v : 'surah');
       });
     }, []),
   );
 
   const openSurah = (item) => {
     light();
-    const startPage = readingMode === 'page' ? pageIndex?.surahStartPage?.[item.number] : null;
+    // Page and Mushaf both read from page data — Mushaf is just a rendering
+    // style over it (see SurahReaderScreen's selectReadingMode) — so both
+    // navigate by page number the same way.
+    const startPage = readingMode !== 'surah' ? pageIndex?.surahStartPage?.[item.number] : null;
     if (startPage) {
       navigation.navigate('SurahReader', { pageNumber: startPage, scrollToSurah: item.number });
     } else {
