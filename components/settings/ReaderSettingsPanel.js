@@ -107,31 +107,35 @@ export default function ReaderSettingsPanel({
         />
       </View>
 
-      <SectionLabel>Display</SectionLabel>
-      <View style={styles.card}>
-        <SettingsRow
-          label="Arabic"
-          switchValue={toggles.showArabic}
-          onSwitchChange={(v) => onToggleChange('showArabic', v)}
-          isFirst
-        />
-        <SettingsRow
-          label="Translation"
-          switchValue={toggles.showTranslation}
-          onSwitchChange={(v) => onToggleChange('showTranslation', v)}
-        />
-        <SettingsRow
-          label="Transcription"
-          switchValue={toggles.showTranscription}
-          onSwitchChange={(v) => onToggleChange('showTranscription', v)}
-        />
-        <SettingsRow
-          label="Tajweed rules"
-          subtitle="Color-coded recitation rules — coming soon"
-          switchValue={toggles.showTajweed}
-          onSwitchChange={(v) => onToggleChange('showTajweed', v)}
-        />
-      </View>
+      {readingMode !== 'mushaf' && (
+        <>
+          <SectionLabel>Display</SectionLabel>
+          <View style={styles.card}>
+            <SettingsRow
+              label="Arabic"
+              switchValue={toggles.showArabic}
+              onSwitchChange={(v) => onToggleChange('showArabic', v)}
+              isFirst
+            />
+            <SettingsRow
+              label="Translation"
+              switchValue={toggles.showTranslation}
+              onSwitchChange={(v) => onToggleChange('showTranslation', v)}
+            />
+            <SettingsRow
+              label="Transcription"
+              switchValue={toggles.showTranscription}
+              onSwitchChange={(v) => onToggleChange('showTranscription', v)}
+            />
+            <SettingsRow
+              label="Tajweed rules"
+              subtitle="Color-coded recitation rules — coming soon"
+              switchValue={toggles.showTajweed}
+              onSwitchChange={(v) => onToggleChange('showTajweed', v)}
+            />
+          </View>
+        </>
+      )}
     </View>
   );
 }

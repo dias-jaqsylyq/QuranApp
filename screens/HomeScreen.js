@@ -7,11 +7,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight } from '../utils/haptics';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/AppContext';
 import PillButton from '../components/PillButton';
 import PrayerTimesCard from '../components/PrayerTimesCard';
 import TodayHifzCard from '../components/TodayHifzCard';
 import AuthBenefitsSheet from '../components/AuthBenefitsSheet';
 import { CLOSE_DURATION } from '../components/settings/Sheet';
+import { useAyahOfTheDay } from '../hooks/useAyahOfTheDay';
 import { AYAH_OF_THE_DAY, READING_STREAK } from '../data/mockHome';
 
 const AUTH_PROMPT_DISMISSED_KEY = 'auth_prompt_dismissed';
@@ -83,12 +85,23 @@ export default function HomeScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
   const { isAuthenticated } = useAuth();
+  const { defaultLang } = useSettings();
   const [segment, setSegment] = useState('today');
   const [dismissed, setDismissed] = useState(false);
   const [engagement, setEngagement] = useState({
     liked: false,
     likeCount: AYAH_OF_THE_DAY.likeCount,
   });
+
+  // Rotates daily from a curated list (see data/ayahOfDay.js); falls back to
+  // the static verse while the day's pick is loading or if the fetch fails,
+  // so the hero card is never left empty. Engagement counts stay static for
+  // now — there's no backend to make likes/comments/shares real yet.
+  const { data: todaysAyah } = useAyahOfTheDay();
+  const ayah = todaysAyah ?? AYAH_OF_THE_DAY;
+  const ayahTranslation = todaysAyah
+    ? (defaultLang === 'ru' ? todaysAyah.ru : defaultLang === 'kz' ? todaysAyah.kz : todaysAyah.en)
+    : AYAH_OF_THE_DAY.translation;
 
   const [authSheetOpen, setAuthSheetOpen] = useState(false);
   const [authSheetMounted, setAuthSheetMounted] = useState(false);
@@ -176,9 +189,9 @@ export default function HomeScreen({ navigation }) {
 
           <LinearGradient colors={['#0D1B2A', '#1A3A2A']} style={styles.heroCard}>
             <Text style={styles.heroLabel}>Ayah of the Day</Text>
-            <Text style={styles.heroReference}>{AYAH_OF_THE_DAY.reference}</Text>
-            <Text style={styles.heroArabic}>{AYAH_OF_THE_DAY.arabic}</Text>
-            <Text style={styles.heroTranslation}>{AYAH_OF_THE_DAY.translation}</Text>
+            <Text style={styles.heroReference}>{ayah.reference}</Text>
+            <Text style={styles.heroArabic}>{ayah.arabic}</Text>
+            <Text style={styles.heroTranslation}>{ayahTranslation}</Text>
 
             <View style={styles.engagementRow}>
               <TouchableOpacity style={styles.engagementItem} onPress={toggleLike}>

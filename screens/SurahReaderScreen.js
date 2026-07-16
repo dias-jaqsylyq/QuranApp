@@ -3,12 +3,12 @@ import {
   View,
   Text,
   FlatList,
+  ScrollView,
   TouchableOpacity,
   Pressable,
   StyleSheet,
   ActivityIndicator,
   StatusBar,
-  Alert,
   Modal,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,9 @@ import { useSettings } from '../context/AppContext';
 import { light, medium, success } from '../utils/haptics';
 import { stripTajweed, simplifyTranslit } from '../utils/quranText';
 import Sheet, { CLOSE_DURATION } from '../components/settings/Sheet';
+import BismillahBanner from '../components/BismillahBanner';
+import SurahDivider from '../components/SurahDivider';
+import MushafPage from '../components/MushafPage';
 import ReaderSettingsPanel from '../components/settings/ReaderSettingsPanel';
 import ArabicFontPanel from '../components/settings/ArabicFontPanel';
 import TranscriptionPanel from '../components/settings/TranscriptionPanel';
@@ -109,32 +112,9 @@ function SurahHeaderBanner({ styles, C, surahName, surahNameEn, surahNumber, ver
   );
 }
 
-function BismillahBanner({ styles }) {
-  return (
-    <View style={styles.bismillahCard}>
-      <Text style={styles.bismillahText}>بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</Text>
-    </View>
-  );
-}
-
 function PageMetaRow({ styles, page, juz, hizb }) {
   return (
     <Text style={styles.pageMetaText}>{`${page} page · Juz ${juz} · Hizb ${hizb}`}</Text>
-  );
-}
-
-// Marks a surah boundary inside a page's continuous ayah stream — a plain
-// hairline + label, not a card, so the content doesn't visually "break".
-function SurahDivider({ styles, surahNumber, surahName, surahNameEn }) {
-  return (
-    <View style={styles.surahDividerRow}>
-      <View style={styles.surahDividerLine} />
-      <View style={styles.surahDividerLabel}>
-        <Text style={styles.surahDividerEn}>{`${surahNumber}. ${surahNameEn}`}</Text>
-        <Text style={styles.surahDividerAr}>{surahName}</Text>
-      </View>
-      <View style={styles.surahDividerLine} />
-    </View>
   );
 }
 
@@ -213,24 +193,6 @@ const makeStyles = (C, scale) =>
     },
     heroOrnamentBottom: { marginTop: 16 },
 
-    // Bismillah — its own quiet surfaceGray card, same family as verse cards
-    bismillahCard: {
-      backgroundColor: C.surfaceGray,
-      borderRadius: 20,
-      marginHorizontal: 16,
-      marginTop: 12,
-      paddingVertical: 18,
-      paddingHorizontal: 20,
-      alignItems: 'center',
-    },
-    bismillahText: {
-      fontSize: 24,
-      color: C.arabicText,
-      lineHeight: 44,
-      textAlign: 'center',
-      fontFamily: 'Amiri_400Regular',
-    },
-
     // Page meta — plain caption, no card (too light to deserve one)
     pageMetaText: {
       textAlign: 'center',
@@ -308,29 +270,6 @@ const makeStyles = (C, scale) =>
       color: C.text,
       lineHeight: Math.round(23 * scale),
       marginTop: 6,
-    },
-
-    // Surah-boundary divider inside a page's continuous stream
-    surahDividerRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      paddingHorizontal: 20,
-      paddingVertical: 18,
-    },
-    surahDividerLine: { flex: 1, height: 1, backgroundColor: C.border },
-    surahDividerLabel: { alignItems: 'center', gap: 2 },
-    surahDividerEn: {
-      fontSize: 12,
-      fontWeight: '700',
-      color: C.textSecondary,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    surahDividerAr: {
-      fontSize: 16,
-      color: C.arabicText,
-      fontFamily: 'Amiri_400Regular',
     },
 
     // Page-mode header title (tappable to open the page picker)
@@ -549,7 +488,9 @@ export default function SurahReaderScreen({ route, navigation }) {
           stateRef.current.reciterFolder = r.folder;
         }
       }
-      if (map.reading_mode === 'surah' || map.reading_mode === 'page') setReadingMode(map.reading_mode);
+      if (map.reading_mode === 'surah' || map.reading_mode === 'page' || map.reading_mode === 'mushaf') {
+        setReadingMode(map.reading_mode);
+      }
       if (map.show_arabic != null) setShowArabic(map.show_arabic !== '0');
       if (map.show_translation != null) setShowTranslation(map.show_translation !== '0');
       if (map.show_transcription != null) setShowTranscription(map.show_transcription !== '0');
@@ -574,22 +515,21 @@ export default function SurahReaderScreen({ route, navigation }) {
   // whichever verse is currently active so reading position isn't lost, but
   // only persists the preference for how SurahList routes you next time —
   // it doesn't retroactively change how this instance was opened.
+  // Mushaf is a *rendering* style over the same page data as Page mode, not
+  // a distinct data-fetch mode, so both map to the 'page' data mode below.
   const selectReadingMode = (value) => {
     light();
-    if (value === 'mushaf') {
-      Alert.alert('Coming soon');
-      return;
-    }
     setReadingMode(value);
     AsyncStorage.setItem('reading_mode', value).catch(() => {});
 
-    if (value === view.mode) return;
+    const nextDataMode = value === 'surah' ? 'surah' : 'page';
+    if (nextDataMode === view.mode) return;
     const anchor = stateRef.current.verses[stateRef.current.currentIndex];
     if (!anchor) return;
 
     if (status.playing) player.pause();
     setPendingAnchor({ type: 'surahAyah', surahNumber: anchor.surahNumber, number: anchor.number });
-    if (value === 'page') {
+    if (nextDataMode === 'page') {
       setView({ mode: 'page', pageNumber: anchor.page });
     } else {
       setView({ mode: 'surah', surahNumber: anchor.surahNumber, surahName: anchor.surahName, surahNameEn: anchor.surahNameEn });
@@ -716,7 +656,7 @@ export default function SurahReaderScreen({ route, navigation }) {
             surahNumber={view.surahNumber}
             verseCount={verses.length}
           />
-          {showBismillah && <BismillahBanner styles={styles} />}
+          {showBismillah && <BismillahBanner />}
           {pageMeta && <PageMetaRow styles={styles} page={pageMeta.page} juz={pageMeta.juz} hizb={pageMeta.hizb} />}
         </View>
       );
@@ -725,12 +665,11 @@ export default function SurahReaderScreen({ route, navigation }) {
     return (
       <View>
         <SurahDivider
-          styles={styles}
           surahNumber={verses[0].surahNumber}
           surahName={verses[0].surahName}
           surahNameEn={verses[0].surahNameEn}
         />
-        {firstVerseNeedsBismillah && <BismillahBanner styles={styles} />}
+        {firstVerseNeedsBismillah && <BismillahBanner />}
       </View>
     );
   }, [view, styles, C, verses, showBismillah, pageMeta, firstVerseStartsNewSurah, firstVerseNeedsBismillah]);
@@ -868,13 +807,12 @@ export default function SurahReaderScreen({ route, navigation }) {
       <View>
         {showDividerAbove && (
           <SurahDivider
-            styles={styles}
             surahNumber={item.surahNumber}
             surahName={item.surahName}
             surahNameEn={item.surahNameEn}
           />
         )}
-        {showBismillahAbove && <BismillahBanner styles={styles} />}
+        {showBismillahAbove && <BismillahBanner />}
         <TouchableOpacity
           style={[styles.verseRow, active && styles.verseRowActive]}
           onPress={() => { revealControls(); loadAndPlayVerse(index); }}
@@ -920,6 +858,19 @@ export default function SurahReaderScreen({ route, navigation }) {
   const translationOpt = TRANSLATION_OPTIONS.find((o) => o.key === defaultLang);
   const themeOpt = THEME_OPTIONS.find((o) => o.value === colorMode) ?? THEME_OPTIONS[1];
 
+  // Mushaf is a rendering style over the same page data as Page mode (see
+  // selectReadingMode) — only meaningful once that data has actually loaded.
+  const isMushaf = readingMode === 'mushaf' && view.mode === 'page';
+  const activeVerse = verses[currentIndex];
+  const activeVerseId = activeVerse ? `${activeVerse.surahNumber}:${activeVerse.number}` : null;
+
+  const onMushafVersePress = (item) => {
+    const idx = verses.findIndex((v) => v.surahNumber === item.surahNumber && v.number === item.number);
+    if (idx < 0) return;
+    revealControls();
+    loadAndPlayVerse(idx);
+  };
+
   const closeSettings = () => {
     setSettingsOpen(false);
     setActiveSubPanel(null);
@@ -942,6 +893,19 @@ export default function SurahReaderScreen({ route, navigation }) {
           <View style={styles.center}>
             <Text style={styles.errorTxt}>Failed to load. Check your connection.</Text>
           </View>
+        ) : isMushaf ? (
+          <ScrollView contentContainerStyle={styles.verseList} showsVerticalScrollIndicator={false}>
+            {ListHeader}
+            <MushafPage
+              verses={verses}
+              activeVerseId={activeVerseId}
+              flashedVerseId={flashedVerseId}
+              scale={scale}
+              onVersePress={onMushafVersePress}
+              onVerseLongPress={bookmarkVerse}
+            />
+            {ListFooter}
+          </ScrollView>
         ) : (
           <FlatList
             ref={flatListRef}
