@@ -1,0 +1,187 @@
+{
+  "/Users/diasjaqsylyq/QuranApp/.claude/settings.json": {
+    "mtime": 1781382386.8214636,
+    "ast_hash": "dc580fca35a0e98ed20777ede5e545a1",
+    "semantic_hash": "dc580fca35a0e98ed20777ede5e545a1"
+  },
+  "/Users/diasjaqsylyq/QuranApp/.claude/settings.local.json": {
+    "mtime": 1781877589.0180457,
+    "ast_hash": "4ea798089c65a73b3650cec92f4ed0cb",
+    "semantic_hash": "4ea798089c65a73b3650cec92f4ed0cb"
+  },
+  "/Users/diasjaqsylyq/QuranApp/App.js": {
+    "mtime": 1781875428.5597637,
+    "ast_hash": "8736c194da6fddd537be2dfe14005815",
+    "semantic_hash": "8736c194da6fddd537be2dfe14005815"
+  },
+  "/Users/diasjaqsylyq/QuranApp/app.json": {
+    "mtime": 1781461841.918388,
+    "ast_hash": "ba9342b2cc67af04b31e1f87aebc36a2",
+    "semantic_hash": "ba9342b2cc67af04b31e1f87aebc36a2"
+  },
+  "/Users/diasjaqsylyq/QuranApp/components/AvatarView.js": {
+    "mtime": 1781875219.5902617,
+    "ast_hash": "01eacf0772560a3befb43c4bf9a38641",
+    "semantic_hash": "01eacf0772560a3befb43c4bf9a38641"
+  },
+  "/Users/diasjaqsylyq/QuranApp/components/CustomTabBar.js": {
+    "mtime": 1781875288.0170977,
+    "ast_hash": "c5e1adba89fb99c9cf10a7a43e0dfb89",
+    "semantic_hash": "c5e1adba89fb99c9cf10a7a43e0dfb89"
+  },
+  "/Users/diasjaqsylyq/QuranApp/components/GradientTopicCard.js": {
+    "mtime": 1781875224.8628938,
+    "ast_hash": "dd1e22ecadb2a40af204fa8d07eb3ccb",
+    "semantic_hash": "dd1e22ecadb2a40af204fa8d07eb3ccb"
+  },
+  "/Users/diasjaqsylyq/QuranApp/components/PillButton.js": {
+    "mtime": 1781875181.182735,
+    "ast_hash": "e37159fc54e9793c43c9b696f593c38a",
+    "semantic_hash": "e37159fc54e9793c43c9b696f593c38a"
+  },
+  "/Users/diasjaqsylyq/QuranApp/components/SectionHeader.js": {
+    "mtime": 1781875204.305192,
+    "ast_hash": "2bf32ca6dda5459d6c5ad9bcdd0ab12f",
+    "semantic_hash": "2bf32ca6dda5459d6c5ad9bcdd0ab12f"
+  },
+  "/Users/diasjaqsylyq/QuranApp/components/SettingsRow.js": {
+    "mtime": 1781875199.2166283,
+    "ast_hash": "ec7dc2f3847f6ecb1a5174b1001b3b9f",
+    "semantic_hash": "ec7dc2f3847f6ecb1a5174b1001b3b9f"
+  },
+  "/Users/diasjaqsylyq/QuranApp/components/StatCard.js": {
+    "mtime": 1781875210.9035265,
+    "ast_hash": "869b74833a6298c79d7564afecc3a767",
+    "semantic_hash": "869b74833a6298c79d7564afecc3a767"
+  },
+  "/Users/diasjaqsylyq/QuranApp/context/AppContext.js": {
+    "mtime": 1781459037.4180455,
+    "ast_hash": "7c4faecc85f61ed7549660a72ebb8d3d",
+    "semantic_hash": "7c4faecc85f61ed7549660a72ebb8d3d"
+  },
+  "/Users/diasjaqsylyq/QuranApp/data/mockHome.js": {
+    "mtime": 1781875311.3836675,
+    "ast_hash": "7c336993afc951f37a78f085f86de0a0",
+    "semantic_hash": "7c336993afc951f37a78f085f86de0a0"
+  },
+  "/Users/diasjaqsylyq/QuranApp/data/mockProfile.js": {
+    "mtime": 1781875322.32541,
+    "ast_hash": "5c82a47683ab2ea7894daea2d9b81a67",
+    "semantic_hash": "5c82a47683ab2ea7894daea2d9b81a67"
+  },
+  "/Users/diasjaqsylyq/QuranApp/data/mockTopics.js": {
+    "mtime": 1781875318.0853465,
+    "ast_hash": "a437f98bd17f8362add096f966955973",
+    "semantic_hash": "a437f98bd17f8362add096f966955973"
+  },
+  "/Users/diasjaqsylyq/QuranApp/data/reciters.js": {
+    "mtime": 1781383044.0126622,
+    "ast_hash": "851618916f375de2539b76201bc087bf",
+    "semantic_hash": "851618916f375de2539b76201bc087bf"
+  },
+  "/Users/diasjaqsylyq/QuranApp/hooks/useQuranData.js": {
+    "mtime": 1781461421.4991353,
+    "ast_hash": "0d2e36f718063df3367dbc72943fb6da",
+    "semantic_hash": "0d2e36f718063df3367dbc72943fb6da"
+  },
+  "/Users/diasjaqsylyq/QuranApp/index.js": {
+    "mtime": 1781382350.7691286,
+    "ast_hash": "33caa6d28d87fc7e637c033d0d7124b1",
+    "semantic_hash": "33caa6d28d87fc7e637c033d0d7124b1"
+  },
+  "/Users/diasjaqsylyq/QuranApp/package.json": {
+    "mtime": 1781875060.9708521,
+    "ast_hash": "cf1687288de673f4f4638c453ec31374",
+    "semantic_hash": "cf1687288de673f4f4638c453ec31374"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/BookmarksScreen.js": {
+    "mtime": 1781875450.829489,
+    "ast_hash": "3d4ca782524fed9de00295b1ea13c551",
+    "semantic_hash": "3d4ca782524fed9de00295b1ea13c551"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/EditProfileScreen.js": {
+    "mtime": 1781875393.438138,
+    "ast_hash": "d4336290a00d622b5a01869d9752b010",
+    "semantic_hash": "d4336290a00d622b5a01869d9752b010"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/HomeScreen.js": {
+    "mtime": 1781875352.5565624,
+    "ast_hash": "8e5aaa251317226fa9d07287c693dceb",
+    "semantic_hash": "8e5aaa251317226fa9d07287c693dceb"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/ProfileScreen.js": {
+    "mtime": 1781875375.0376782,
+    "ast_hash": "333a5bba8a5375fb6744bffbcbc103db",
+    "semantic_hash": "333a5bba8a5375fb6744bffbcbc103db"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/ReciterScreen.js": {
+    "mtime": 1781875551.2345645,
+    "ast_hash": "7e691bcd130bc47950b4dd4e0214e289",
+    "semantic_hash": "7e691bcd130bc47950b4dd4e0214e289"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/SearchScreen.js": {
+    "mtime": 1781875599.3008492,
+    "ast_hash": "74f45edac97df9bc8df5f4ac49351ab0",
+    "semantic_hash": "74f45edac97df9bc8df5f4ac49351ab0"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/SettingsScreen.js": {
+    "mtime": 1781875527.3705997,
+    "ast_hash": "fb212c99819eb1fabc8403a9007d935d",
+    "semantic_hash": "fb212c99819eb1fabc8403a9007d935d"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/SurahListScreen.js": {
+    "mtime": 1781875454.842417,
+    "ast_hash": "5c69a004fbb7cc6e18b0c58725275e04",
+    "semantic_hash": "5c69a004fbb7cc6e18b0c58725275e04"
+  },
+  "/Users/diasjaqsylyq/QuranApp/screens/SurahReaderScreen.js": {
+    "mtime": 1781461835.9882636,
+    "ast_hash": "9eae6ecc3105e40fb6add7e81a3fb404",
+    "semantic_hash": "9eae6ecc3105e40fb6add7e81a3fb404"
+  },
+  "/Users/diasjaqsylyq/QuranApp/theme/colors.js": {
+    "mtime": 1781875173.3206923,
+    "ast_hash": "2530d1a260fb210a1716daa4929b4f5c",
+    "semantic_hash": "2530d1a260fb210a1716daa4929b4f5c"
+  },
+  "/Users/diasjaqsylyq/QuranApp/utils/haptics.js": {
+    "mtime": 1781385204.4984517,
+    "ast_hash": "1979389c13ac513332e2e19b0dcd4f20",
+    "semantic_hash": "1979389c13ac513332e2e19b0dcd4f20"
+  },
+  "/Users/diasjaqsylyq/QuranApp/AGENTS.md": {
+    "mtime": 1781382386.8200557,
+    "ast_hash": "fa597bde49bd54c3eca61137e60aa28a",
+    "semantic_hash": "fa597bde49bd54c3eca61137e60aa28a"
+  },
+  "/Users/diasjaqsylyq/QuranApp/CLAUDE.md": {
+    "mtime": 1781382386.820263,
+    "ast_hash": "5c27369b226fcf2be8a6cfe52224e767",
+    "semantic_hash": "5c27369b226fcf2be8a6cfe52224e767"
+  },
+  "/Users/diasjaqsylyq/QuranApp/assets/icon-preview.html": {
+    "mtime": 1781461833.7199526,
+    "ast_hash": "f06728e9ed3a4efcecbe2dcaf135aad5",
+    "semantic_hash": "f06728e9ed3a4efcecbe2dcaf135aad5"
+  },
+  "/Users/diasjaqsylyq/QuranApp/assets/adaptive-icon.png": {
+    "mtime": 1781382350.7705812,
+    "ast_hash": "97dae5a0e62ad8551d8a31897b425e63",
+    "semantic_hash": "97dae5a0e62ad8551d8a31897b425e63"
+  },
+  "/Users/diasjaqsylyq/QuranApp/assets/favicon.png": {
+    "mtime": 1781382350.7713914,
+    "ast_hash": "4f1cb2cac2370cd5050681232e8575a8",
+    "semantic_hash": "4f1cb2cac2370cd5050681232e8575a8"
+  },
+  "/Users/diasjaqsylyq/QuranApp/assets/icon.png": {
+    "mtime": 1781382350.7720175,
+    "ast_hash": "4e3f888fc8475f69fd5fa32f1ad5216a",
+    "semantic_hash": "4e3f888fc8475f69fd5fa32f1ad5216a"
+  },
+  "/Users/diasjaqsylyq/QuranApp/assets/splash-icon.png": {
+    "mtime": 1781382350.7738233,
+    "ast_hash": "97dae5a0e62ad8551d8a31897b425e63",
+    "semantic_hash": "97dae5a0e62ad8551d8a31897b425e63"
+  }
+}

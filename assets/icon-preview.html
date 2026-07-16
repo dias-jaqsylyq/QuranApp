@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>QuranApp Icon Preview</title>
+<style>
+  body { margin: 0; background: #888; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1024" height="1024"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const W = 1024, H = 1024;
+const NAVY = '#0D1B2A';
+const GOLD  = '#C4A35A';
+
+// ── Background ──────────────────────────────────────────────────────────────
+const bg = ctx.createLinearGradient(0, 0, 0, H);
+bg.addColorStop(0, '#0D1B2A');
+bg.addColorStop(1, '#112233');
+ctx.fillStyle = bg;
+ctx.beginPath();
+ctx.roundRect(0, 0, W, H, 120);
+ctx.fill();
+
+// ── Crescent moon ───────────────────────────────────────────────────────────
+// Drawn as: filled outer circle minus an offset inner circle (clip trick)
+ctx.save();
+ctx.translate(W / 2, H / 2 - 40);
+
+const outerR = 210;
+const innerR = 175;
+const innerOX = 85; // offset of the inner (cutout) circle to the right
+
+ctx.fillStyle = GOLD;
+ctx.shadowColor = GOLD;
+ctx.shadowBlur = 32;
+
+// Draw the crescent by subtracting the inner circle from the outer
+ctx.beginPath();
+ctx.arc(0, 0, outerR, 0, Math.PI * 2, false); // outer full circle (CW = solid)
+ctx.arc(innerOX, 0, innerR, 0, Math.PI * 2, true);  // inner cutout (CCW = hole)
+ctx.fill('evenodd');
+
+ctx.restore();
+
+// ── 5-pointed star (upper-right of crescent) ─────────────────────────────
+function drawStar(cx, cy, r, fill) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = fill;
+  ctx.shadowColor = fill;
+  ctx.shadowBlur = 16;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const outer = (Math.PI / 2) + i * (2 * Math.PI / 5);
+    const inner = outer + Math.PI / 5;
+    const x1 = Math.cos(outer) * r;
+    const y1 = -Math.sin(outer) * r;
+    const x2 = Math.cos(inner) * (r * 0.38);
+    const y2 = -Math.sin(inner) * (r * 0.38);
+    if (i === 0) ctx.moveTo(x1, y1); else ctx.lineTo(x1, y1);
+    ctx.lineTo(x2, y2);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// Position star to the upper-right of the crescent centre
+drawStar(W / 2 + 195, H / 2 - 210, 52, GOLD);
+
+// ── Arabic text: قرآن ────────────────────────────────────────────────────
+ctx.save();
+ctx.fillStyle = GOLD;
+ctx.shadowColor = GOLD;
+ctx.shadowBlur = 20;
+ctx.font = 'bold 148px "Arabic Typesetting", "Geeza Pro", "Al Nile", "Traditional Arabic", serif';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.direction = 'rtl';
+ctx.fillText('قرآن', W / 2, H / 2 + 255);
+ctx.restore();
+
+// ── Subtle border ────────────────────────────────────────────────────────
+ctx.strokeStyle = 'rgba(196,163,90,0.25)';
+ctx.lineWidth = 6;
+ctx.beginPath();
+ctx.roundRect(3, 3, W - 6, H - 6, 118);
+ctx.stroke();
+</script>
+</body>
+</html>
