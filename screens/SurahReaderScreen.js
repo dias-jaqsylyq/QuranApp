@@ -38,6 +38,7 @@ import ColorThemePanel from '../components/settings/ColorThemePanel';
 import PillButton from '../components/PillButton';
 import Stepper from '../components/Stepper';
 import { recordActiveToday, recordSurahFinished } from '../utils/profileStats';
+import { loadBookmarks, saveBookmarks } from '../utils/bookmarks';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -778,10 +779,9 @@ export default function SurahReaderScreen({ route, navigation }) {
     };
 
     try {
-      const raw = await AsyncStorage.getItem('bookmarks');
-      const existing = raw ? JSON.parse(raw) : [];
+      const existing = await loadBookmarks();
       const deduped = existing.filter(b => b.id !== id);
-      await AsyncStorage.setItem('bookmarks', JSON.stringify([bookmark, ...deduped]));
+      await saveBookmarks([bookmark, ...deduped]);
     } catch (_) {}
 
     success();

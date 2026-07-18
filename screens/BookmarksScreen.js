@@ -9,12 +9,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight, medium as hapticMedium } from '../utils/haptics';
-
-const STORAGE_KEY = 'bookmarks';
+import { loadBookmarks, saveBookmarks } from '../utils/bookmarks';
 
 function buildSections(bookmarks) {
   const map = {};
@@ -94,13 +92,7 @@ export default function BookmarksScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem(STORAGE_KEY).then(raw => {
-        try {
-          setBookmarks(raw ? JSON.parse(raw) : []);
-        } catch {
-          setBookmarks([]);
-        }
-      });
+      loadBookmarks().then(setBookmarks);
     }, []),
   );
 
@@ -114,7 +106,7 @@ export default function BookmarksScreen({ navigation }) {
           hapticMedium();
           const next = bookmarks.filter(b => b.id !== id);
           setBookmarks(next);
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          await saveBookmarks(next);
         },
       },
     ]);

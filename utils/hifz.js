@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { clamp, todayISO, formatFinishDate } from './khatm';
+import { pushUpdate } from '../lib/sync';
 
 export { formatFinishDate };
 
-const STORAGE_KEY = 'hifz_plans';
+export const STORAGE_KEY = 'hifz_plans';
+const SYNC_TABLE = 'hifz_plans';
 
 export async function loadPlans() {
   try {
@@ -16,6 +18,14 @@ export async function loadPlans() {
 
 export async function savePlans(plans) {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(plans));
+  pushUpdate(SYNC_TABLE, plans);
+}
+
+// Applies a pulled cloud value to local storage only — used by the sign-in
+// sync pass, which must not immediately push the value it just downloaded
+// back up to the cloud.
+export async function applyRemotePlans(plans) {
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(plans ?? []));
 }
 
 export function ayahsPerDayFromDays(totalAyahs, days) {

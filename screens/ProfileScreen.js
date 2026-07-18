@@ -17,8 +17,8 @@ import { MOCK_PROFILE, ACTIVITY_FILTERS } from '../data/mockProfile';
 import { pickAndSaveAvatar, AVATAR_KEY } from '../utils/avatarPicker';
 import { loadProfileStats } from '../utils/profileStats';
 import { loadPlans } from '../utils/hifz';
+import { loadCircle, saveCircle } from '../utils/readingCircle';
 
-const CIRCLE_KEY = 'reading_circle';
 const TOTAL_SURAHS = 114;
 
 const makeStyles = (C) =>
@@ -114,13 +114,7 @@ export default function ProfileScreen({ navigation }) {
       });
       loadProfileStats().then(setStats);
       loadPlans().then((plans) => setMemorizedCount(plans.filter((p) => p.status === 'memorized').length));
-      AsyncStorage.getItem(CIRCLE_KEY).then((raw) => {
-        try {
-          setCircle(raw ? JSON.parse(raw) : []);
-        } catch {
-          setCircle([]);
-        }
-      });
+      loadCircle().then(setCircle);
     }, []),
   );
 
@@ -162,13 +156,13 @@ export default function ProfileScreen({ navigation }) {
   const addCircleEntry = async (name) => {
     const next = [...circle, { id: String(Date.now()), name }];
     setCircle(next);
-    await AsyncStorage.setItem(CIRCLE_KEY, JSON.stringify(next));
+    await saveCircle(next);
   };
 
   const removeCircleEntry = async (id) => {
     const next = circle.filter((e) => e.id !== id);
     setCircle(next);
-    await AsyncStorage.setItem(CIRCLE_KEY, JSON.stringify(next));
+    await saveCircle(next);
   };
 
   const showBadges = () => {

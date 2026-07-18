@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight } from '../utils/haptics';
+import { useAuth } from '../context/AuthContext';
 import AvatarView from '../components/AvatarView';
 import PillButton from '../components/PillButton';
 import SettingsRow from '../components/SettingsRow';
@@ -69,6 +70,7 @@ const makeStyles = (C) =>
 export default function EditProfileScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { user, deleteAccount } = useAuth();
   const [firstName, setFirstName] = useState(MOCK_PROFILE.displayName);
   const [lastName, setLastName] = useState('');
   const [location, setLocation] = useState('');
@@ -121,12 +123,32 @@ export default function EditProfileScreen({ navigation }) {
     Alert.alert('Coming soon');
   };
 
+  // TODO: this clears the user's cloud sync rows, session, and local data,
+  // but cannot remove the auth.users record itself — that needs a
+  // service_role key, which must never ship inside the app. Until a Supabase
+  // Edge Function exists for that, the account row must be deleted manually
+  // from the Supabase dashboard (Authentication > Users).
   const confirmDelete = () => {
     hapticLight();
-    Alert.alert('Delete Account', 'Are you sure you want to delete your account?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => {} },
-    ]);
+    Alert.alert(
+      'Delete Account',
+      'This removes your synced data and signs you out on this device. Are you sure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+              navigation.navigate('Profile');
+            } catch (err) {
+              Alert.alert('Something went wrong', err.message);
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -191,7 +213,7 @@ export default function EditProfileScreen({ navigation }) {
         </View>
 
         <View style={styles.privateCard}>
-          <SettingsRow icon="mail-outline" label="Email" value="you@example.com" chevron isFirst onPress={comingSoon} />
+          <SettingsRow icon="mail-outline" label="Email" value={user?.email ?? 'Not signed in'} chevron isFirst onPress={comingSoon} />
           <SettingsRow icon="notifications-outline" label="Notification Settings" chevron onPress={comingSoon} />
         </View>
 

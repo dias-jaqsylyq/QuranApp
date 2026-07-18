@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIn
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight, success as hapticSuccess } from '../utils/haptics';
@@ -21,12 +20,12 @@ import {
   buildTodayTarget,
   formatTargetRange,
 } from '../utils/khatm';
+import { loadKhatmPlan, saveKhatmPlan, clearKhatmPlan } from '../utils/khatmStorage';
 import PillButton from '../components/PillButton';
 import StatCard from '../components/StatCard';
 import Stepper from '../components/Stepper';
 import { recordActiveToday, incrementKhatmCompletedCount } from '../utils/profileStats';
 
-const STORAGE_KEY = 'khatm_plan';
 const HERO_GRADIENT = ['#0D1B2A', '#1A3A2A'];
 
 const makeStyles = (C) =>
@@ -127,13 +126,7 @@ export default function DailyKhatmScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
-        try {
-          setPlan(raw ? JSON.parse(raw) : null);
-        } catch {
-          setPlan(null);
-        }
-      });
+      loadKhatmPlan().then(setPlan);
     }, []),
   );
 
@@ -177,13 +170,13 @@ export default function DailyKhatmScreen({ navigation }) {
       currentPage: startPage,
       lastMarkedDateISO: null,
     };
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newPlan));
+    await saveKhatmPlan(newPlan);
     setPlan(newPlan);
   };
 
   const startNewKhatm = async () => {
     hapticLight();
-    await AsyncStorage.removeItem(STORAGE_KEY);
+    await clearKhatmPlan();
     setPlan(null);
     setSetupFromJuz(1);
     setSetupToJuz(TOTAL_JUZ);
@@ -215,7 +208,7 @@ export default function DailyKhatmScreen({ navigation }) {
     hapticSuccess();
     const nextCurrentPage = Math.min(plan.currentPage + plan.pagesPerDay, plan.endPage + 1);
     const updated = { ...plan, currentPage: nextCurrentPage, lastMarkedDateISO: todayISO() };
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    await saveKhatmPlan(updated);
     setPlan(updated);
     recordActiveToday().catch(() => {});
   };
@@ -226,7 +219,7 @@ export default function DailyKhatmScreen({ navigation }) {
     if (!isCompleted || !plan || plan.completionRecorded) return;
     incrementKhatmCompletedCount().catch(() => {});
     const updated = { ...plan, completionRecorded: true };
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated)).catch(() => {});
+    saveKhatmPlan(updated).catch(() => {});
     setPlan(updated);
   }, [isCompleted, plan]);
 
