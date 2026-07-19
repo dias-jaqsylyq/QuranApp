@@ -13,4 +13,3 @@ export const AYAH_OF_THE_DAY = {
   shareCount: 9,
 };
 
-export const READING_STREAK = 2;

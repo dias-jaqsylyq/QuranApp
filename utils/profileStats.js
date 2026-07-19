@@ -1,11 +1,85 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { pushUpdate } from '../lib/sync';
 
-const ACTIVE_DAYS_KEY = 'active_days';
-const SURAHS_FINISHED_KEY = 'surahs_finished';
-const KHATM_COMPLETED_KEY = 'khatm_completed_count';
+export const STORAGE_KEY = 'profile_stats';
+const SYNC_TABLE = 'profile_stats';
+
+// Legacy keys from before the single-blob shape — migrated on first load.
+const LEGACY_ACTIVE_DAYS_KEY = 'active_days';
+const LEGACY_SURAHS_FINISHED_KEY = 'surahs_finished';
+const LEGACY_KHATM_COMPLETED_KEY = 'khatm_completed_count';
+
+const EMPTY_BLOB = {
+  activeDays: [],
+  surahsFinished: [],
+  khatmCompletedCount: 0,
+};
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function normalizeBlob(raw) {
+  if (!raw || typeof raw !== 'object') return { ...EMPTY_BLOB };
+  return {
+    activeDays: Array.isArray(raw.activeDays) ? raw.activeDays : [],
+    surahsFinished: Array.isArray(raw.surahsFinished) ? raw.surahsFinished : [],
+    khatmCompletedCount:
+      typeof raw.khatmCompletedCount === 'number' ? raw.khatmCompletedCount : 0,
+  };
+}
+
+async function migrateLegacyKeysIfNeeded() {
+  const existing = await AsyncStorage.getItem(STORAGE_KEY);
+  if (existing) return;
+
+  const pairs = await AsyncStorage.multiGet([
+    LEGACY_ACTIVE_DAYS_KEY,
+    LEGACY_SURAHS_FINISHED_KEY,
+    LEGACY_KHATM_COMPLETED_KEY,
+  ]);
+  const map = Object.fromEntries(pairs);
+  const hasLegacy = pairs.some(([, v]) => v != null);
+  if (!hasLegacy) return;
+
+  const blob = {
+    activeDays: map[LEGACY_ACTIVE_DAYS_KEY] ? JSON.parse(map[LEGACY_ACTIVE_DAYS_KEY]) : [],
+    surahsFinished: map[LEGACY_SURAHS_FINISHED_KEY]
+      ? JSON.parse(map[LEGACY_SURAHS_FINISHED_KEY])
+      : [],
+    khatmCompletedCount: map[LEGACY_KHATM_COMPLETED_KEY]
+      ? parseInt(map[LEGACY_KHATM_COMPLETED_KEY], 10) || 0
+      : 0,
+  };
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(blob));
+  await AsyncStorage.multiRemove([
+    LEGACY_ACTIVE_DAYS_KEY,
+    LEGACY_SURAHS_FINISHED_KEY,
+    LEGACY_KHATM_COMPLETED_KEY,
+  ]);
+}
+
+export async function loadStatsBlob() {
+  try {
+    await migrateLegacyKeysIfNeeded();
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    return normalizeBlob(raw ? JSON.parse(raw) : null);
+  } catch {
+    return { ...EMPTY_BLOB };
+  }
+}
+
+export async function saveStatsBlob(blob) {
+  const normalized = normalizeBlob(blob);
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+  pushUpdate(SYNC_TABLE, normalized);
+}
+
+// Applies a pulled cloud value to local storage only — used by the sign-in
+// sync pass, which must not immediately push the value it just downloaded
+// back up to the cloud.
+export async function applyRemoteStats(blob) {
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeBlob(blob)));
 }
 
 // Records that real reading activity happened today — the minimum needed to
@@ -13,25 +87,23 @@ function todayISO() {
 // keep a history of which days were active, only the most recent position.
 export async function recordActiveToday() {
   const today = todayISO();
-  const raw = await AsyncStorage.getItem(ACTIVE_DAYS_KEY);
-  const days = raw ? JSON.parse(raw) : [];
-  if (days.includes(today)) return;
-  days.push(today);
-  await AsyncStorage.setItem(ACTIVE_DAYS_KEY, JSON.stringify(days.slice(-60)));
+  const blob = await loadStatsBlob();
+  if (blob.activeDays.includes(today)) return;
+  blob.activeDays = [...blob.activeDays, today].slice(-60);
+  await saveStatsBlob(blob);
 }
 
 export async function recordSurahFinished(surahNumber) {
-  const raw = await AsyncStorage.getItem(SURAHS_FINISHED_KEY);
-  const list = raw ? JSON.parse(raw) : [];
-  if (list.includes(surahNumber)) return;
-  list.push(surahNumber);
-  await AsyncStorage.setItem(SURAHS_FINISHED_KEY, JSON.stringify(list));
+  const blob = await loadStatsBlob();
+  if (blob.surahsFinished.includes(surahNumber)) return;
+  blob.surahsFinished = [...blob.surahsFinished, surahNumber];
+  await saveStatsBlob(blob);
 }
 
 export async function incrementKhatmCompletedCount() {
-  const raw = await AsyncStorage.getItem(KHATM_COMPLETED_KEY);
-  const count = raw ? parseInt(raw, 10) || 0 : 0;
-  await AsyncStorage.setItem(KHATM_COMPLETED_KEY, String(count + 1));
+  const blob = await loadStatsBlob();
+  blob.khatmCompletedCount = (blob.khatmCompletedCount || 0) + 1;
+  await saveStatsBlob(blob);
 }
 
 // Consecutive days ending today (or, if today has no activity yet, ending
@@ -58,19 +130,12 @@ export const BADGES = [
 ];
 
 export async function loadProfileStats() {
-  const pairs = await AsyncStorage.multiGet([ACTIVE_DAYS_KEY, SURAHS_FINISHED_KEY, KHATM_COMPLETED_KEY]);
-  const map = Object.fromEntries(pairs);
-
-  const activeDays = map[ACTIVE_DAYS_KEY] ? JSON.parse(map[ACTIVE_DAYS_KEY]) : [];
-  const surahsFinished = map[SURAHS_FINISHED_KEY] ? JSON.parse(map[SURAHS_FINISHED_KEY]) : [];
-  const khatmCompletedCount = map[KHATM_COMPLETED_KEY] ? parseInt(map[KHATM_COMPLETED_KEY], 10) || 0 : 0;
-
+  const blob = await loadStatsBlob();
   const stats = {
-    streak: computeStreak(activeDays),
-    surahsFinishedCount: surahsFinished.length,
-    khatmCompletedCount,
+    streak: computeStreak(blob.activeDays),
+    surahsFinishedCount: blob.surahsFinished.length,
+    khatmCompletedCount: blob.khatmCompletedCount,
   };
   const earnedBadges = BADGES.filter((b) => b.check(stats));
-
   return { ...stats, earnedBadges };
 }

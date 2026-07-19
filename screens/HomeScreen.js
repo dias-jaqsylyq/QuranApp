@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,7 +15,8 @@ import TodayHifzCard from '../components/TodayHifzCard';
 import AuthBenefitsSheet from '../components/AuthBenefitsSheet';
 import { CLOSE_DURATION } from '../components/settings/Sheet';
 import { useAyahOfTheDay } from '../hooks/useAyahOfTheDay';
-import { AYAH_OF_THE_DAY, READING_STREAK } from '../data/mockHome';
+import { loadProfileStats } from '../utils/profileStats';
+import { AYAH_OF_THE_DAY } from '../data/mockHome';
 
 const AUTH_PROMPT_DISMISSED_KEY = 'auth_prompt_dismissed';
 
@@ -88,10 +90,17 @@ export default function HomeScreen({ navigation }) {
   const { defaultLang } = useSettings();
   const [segment, setSegment] = useState('today');
   const [dismissed, setDismissed] = useState(false);
+  const [streak, setStreak] = useState(0);
   const [engagement, setEngagement] = useState({
     liked: false,
     likeCount: AYAH_OF_THE_DAY.likeCount,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfileStats().then((stats) => setStreak(stats.streak));
+    }, []),
+  );
 
   // Rotates daily from a curated list (see data/ayahOfDay.js); falls back to
   // the static verse while the day's pick is loading or if the fetch fails,
@@ -178,7 +187,7 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.greeting}>{getGreeting()}</Text>
               <View style={styles.streakRow}>
                 <Ionicons name="flame-outline" size={14} color={C.accent} />
-                <Text style={styles.streakText}>{READING_STREAK} day streak</Text>
+                <Text style={styles.streakText}>{streak} day streak</Text>
               </View>
             </View>
           </View>

@@ -14,6 +14,11 @@ import {
 } from '../utils/khatmStorage';
 import { STORAGE_KEY as BOOKMARKS_STORAGE_KEY, loadBookmarks, applyRemoteBookmarks } from '../utils/bookmarks';
 import { STORAGE_KEY as CIRCLE_STORAGE_KEY, loadCircle, applyRemoteCircle } from '../utils/readingCircle';
+import {
+  STORAGE_KEY as PROFILE_STATS_STORAGE_KEY,
+  loadStatsBlob,
+  applyRemoteStats,
+} from '../utils/profileStats';
 
 // One entry per SYNC_TABLES table — pairs each table with the local
 // load/applyRemote functions the sign-in sync pass needs. Lives here (not in
@@ -25,6 +30,7 @@ const SYNC_FEATURES = [
   { table: 'khatm_progress', load: loadKhatmPlan, applyRemote: applyRemoteKhatmPlan },
   { table: 'bookmarks', load: loadBookmarks, applyRemote: applyRemoteBookmarks },
   { table: 'reading_circle', load: loadCircle, applyRemote: applyRemoteCircle },
+  { table: 'profile_stats', load: loadStatsBlob, applyRemote: applyRemoteStats },
 ];
 
 export const AuthContext = createContext({
@@ -41,14 +47,15 @@ export const AuthContext = createContext({
 
 const redirectTo = makeRedirectUri({ scheme: 'quranapp', path: 'auth-callback' });
 
-// Local AsyncStorage keys that make up "the account" as shown on
-// EditProfileScreen: the synced feature data plus the profile fields on
-// that same screen. Reading stats/badges and app settings are untouched.
+// Local AsyncStorage keys that make up "the account": synced feature data
+// (including streak/badge inputs) plus the profile fields on EditProfileScreen.
+// App settings (theme, font, reciter, etc.) are left alone.
 const ACCOUNT_LOCAL_KEYS = [
   HIFZ_STORAGE_KEY,
   KHATM_STORAGE_KEY,
   BOOKMARKS_STORAGE_KEY,
   CIRCLE_STORAGE_KEY,
+  PROFILE_STATS_STORAGE_KEY,
   'profile_first_name',
   'profile_last_name',
   'profile_location',
