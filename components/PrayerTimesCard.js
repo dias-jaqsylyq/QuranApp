@@ -12,7 +12,8 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { usePrayerTimes } from '../hooks/usePrayerTimes';
-import { PRAYER_ORDER, PRAYER_LABELS, PRAYER_ICONS } from '../utils/prayerTimes';
+import { useI18n } from '../hooks/useI18n';
+import { PRAYER_ORDER, PRAYER_ICONS } from '../utils/prayerTimes';
 import { light as hapticLight } from '../utils/haptics';
 import PillButton from './PillButton';
 
@@ -97,6 +98,7 @@ const makeStyles = (C) =>
 export default function PrayerTimesCard() {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const { loading, permissionDenied, locationName, times, nextKey, nextTime, countdownMs, retry } =
     usePrayerTimes();
@@ -105,6 +107,8 @@ export default function PrayerTimesCard() {
     () => new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
     [],
   );
+
+  const prayerLabel = (key) => t(`prayer.${key}`);
 
   const toggleExpanded = () => {
     hapticLight();
@@ -115,13 +119,13 @@ export default function PrayerTimesCard() {
   if (!times && permissionDenied) {
     return (
       <View style={styles.card}>
-        <Text style={styles.nextLabel}>Prayer Times</Text>
+        <Text style={styles.nextLabel}>{t('prayer.title')}</Text>
         <Text style={styles.statusText}>
-          Enable location access to see accurate prayer times for your area.
+          {t('prayer.enableLocationHint')}
         </Text>
         <PillButton
           variant="secondary"
-          label="Enable Location"
+          label={t('prayer.enableLocation')}
           onPress={retry}
           style={{ marginTop: 12, alignSelf: 'flex-start' }}
         />
@@ -145,9 +149,9 @@ export default function PrayerTimesCard() {
     <Pressable style={styles.card} onPress={toggleExpanded}>
       <View style={styles.topRow}>
         <View>
-          <Text style={styles.nextLabel}>Next Prayer</Text>
+          <Text style={styles.nextLabel}>{t('prayer.nextPrayer')}</Text>
           <View style={styles.nextRow}>
-            <Text style={styles.nextName}>{PRAYER_LABELS[nextKey]}</Text>
+            <Text style={styles.nextName}>{prayerLabel(nextKey)}</Text>
             <Text style={styles.countdown}>{formatCountdown(countdownMs)}</Text>
           </View>
         </View>
@@ -155,7 +159,7 @@ export default function PrayerTimesCard() {
           <View style={styles.metaCol}>
             <View style={styles.metaRow}>
               <Ionicons name="moon" size={14} color={C.gold} />
-              <Text style={styles.locationText}>{locationName ?? 'Locating…'}</Text>
+              <Text style={styles.locationText}>{locationName ?? t('prayer.locating')}</Text>
             </View>
             <Text style={styles.dateText}>{dateLabel}</Text>
           </View>
@@ -177,7 +181,7 @@ export default function PrayerTimesCard() {
                 <View style={[styles.listIconBadge, active && styles.listIconBadgeActive]}>
                   <Ionicons name={PRAYER_ICONS[key]} size={16} color={active ? C.accent : C.text} />
                 </View>
-                <Text style={[styles.listLabel, active && styles.listLabelActive]}>{PRAYER_LABELS[key]}</Text>
+                <Text style={[styles.listLabel, active && styles.listLabelActive]}>{prayerLabel(key)}</Text>
                 <View style={styles.listTrailing}>
                   <Text style={[styles.listTime, active && styles.listTimeActive]}>
                     {formatTime(timeForKey(key))}
@@ -195,7 +199,7 @@ export default function PrayerTimesCard() {
             return (
               <View key={key} style={[styles.slot, active && styles.slotActive]}>
                 <Ionicons name={PRAYER_ICONS[key]} size={18} color={C.text} />
-                <Text style={styles.slotLabel}>{PRAYER_LABELS[key]}</Text>
+                <Text style={styles.slotLabel}>{prayerLabel(key)}</Text>
                 <Text style={styles.slotTime}>{formatTime(timeForKey(key))}</Text>
               </View>
             );

@@ -2,13 +2,14 @@ import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme/colors';
 import { light as hapticLight } from '../../utils/haptics';
+import { useI18n } from '../../hooks/useI18n';
 import SettingsRow from '../SettingsRow';
 import SectionLabel from './SectionLabel';
 
 const READING_MODES = [
-  { value: 'surah', label: 'Surah' },
-  { value: 'page', label: 'Page' },
-  { value: 'mushaf', label: 'Mushaf' },
+  { value: 'surah', labelKey: 'reader.modeSurah' },
+  { value: 'page', labelKey: 'reader.modePage' },
+  { value: 'mushaf', labelKey: 'reader.modeMushaf' },
 ];
 
 const makeStyles = (C) =>
@@ -44,6 +45,7 @@ export default function ReaderSettingsPanel({
 }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
 
   const selectReadingMode = (value) => {
     hapticLight();
@@ -52,7 +54,7 @@ export default function ReaderSettingsPanel({
 
   return (
     <View>
-      <SectionLabel>Reading mode</SectionLabel>
+      <SectionLabel>{t('reader.readingMode')}</SectionLabel>
       <View style={styles.track}>
         {READING_MODES.map((m) => (
           <TouchableOpacity
@@ -61,17 +63,17 @@ export default function ReaderSettingsPanel({
             onPress={() => selectReadingMode(m.value)}
           >
             <Text style={[styles.segmentText, readingMode === m.value && styles.segmentTextActive]}>
-              {m.label}
+              {t(m.labelKey)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <SectionLabel>Customize</SectionLabel>
+      <SectionLabel>{t('reader.customize')}</SectionLabel>
       <View style={styles.card}>
         <SettingsRow
           icon="text-outline"
-          label="Arabic font"
+          label={t('reader.arabicFontRow')}
           subtitle={rowSubtitles.arabicFont}
           chevron
           isFirst
@@ -79,28 +81,35 @@ export default function ReaderSettingsPanel({
         />
         <SettingsRow
           icon="reader-outline"
-          label="Transcription"
+          label={t('reader.transcription')}
           subtitle={rowSubtitles.transcription}
           chevron
           onPress={() => onNavigate('transcription')}
         />
         <SettingsRow
           icon="language-outline"
-          label="Translation"
+          label={t('reader.translation')}
           subtitle={rowSubtitles.translation}
           chevron
           onPress={() => onNavigate('translation')}
         />
         <SettingsRow
+          icon="book-outline"
+          label={t('reader.tafsir')}
+          subtitle={rowSubtitles.tafsir}
+          chevron
+          onPress={() => onNavigate('tafsir')}
+        />
+        <SettingsRow
           icon="mic-outline"
-          label="Reciter / Voice"
+          label={t('reader.reciterVoice')}
           subtitle={rowSubtitles.reciter}
           chevron
           onPress={() => onNavigate('reciter')}
         />
         <SettingsRow
           icon="color-palette-outline"
-          label="Color theme"
+          label={t('reader.colorThemeRow')}
           subtitle={rowSubtitles.colorTheme}
           chevron
           onPress={() => onNavigate('colorTheme')}
@@ -109,27 +118,27 @@ export default function ReaderSettingsPanel({
 
       {readingMode !== 'mushaf' && (
         <>
-          <SectionLabel>Display</SectionLabel>
+          <SectionLabel>{t('reader.display')}</SectionLabel>
           <View style={styles.card}>
             <SettingsRow
-              label="Arabic"
+              label={t('reader.toggleArabic')}
               switchValue={toggles.showArabic}
               onSwitchChange={(v) => onToggleChange('showArabic', v)}
               isFirst
             />
             <SettingsRow
-              label="Translation"
+              label={t('reader.toggleTranslation')}
               switchValue={toggles.showTranslation}
               onSwitchChange={(v) => onToggleChange('showTranslation', v)}
             />
             <SettingsRow
-              label="Transcription"
+              label={t('reader.toggleTranscription')}
               switchValue={toggles.showTranscription}
               onSwitchChange={(v) => onToggleChange('showTranscription', v)}
             />
             <SettingsRow
-              label="Tajweed rules"
-              subtitle="Color-coded recitation rules — coming soon"
+              label={t('reader.toggleTajweed')}
+              subtitle={t('reader.tajweedSubtitle')}
               switchValue={toggles.showTajweed}
               onSwitchChange={(v) => onToggleChange('showTajweed', v)}
             />

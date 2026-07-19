@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight, success as hapticSuccess } from '../utils/haptics';
+import { useI18n } from '../hooks/useI18n';
 import {
   loadPlansWithReviews,
   savePlans,
@@ -36,6 +37,7 @@ const makeStyles = (C) =>
 export default function TodayHifzCard({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const [summary, setSummary] = useState(null);
   const [review, setReview] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -85,20 +87,20 @@ export default function TodayHifzCard({ navigation }) {
 
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={openHifz}>
-      <Text style={styles.label}>Today</Text>
+      <Text style={styles.label}>{t('home.segmentToday')}</Text>
 
       {summary?.hasOpenTarget ? (
         <>
           <View style={styles.row}>
             <Ionicons name="book-outline" size={18} color={C.accent} />
             <Text style={styles.text} numberOfLines={1}>
-              Memorize: {summary.surahNameEn} {summary.targetStart}–{summary.targetEnd}{extra}
+              {t('hifz.currentlyMemorizing')}: {summary.surahNameEn} {summary.targetStart}–{summary.targetEnd}{extra}
             </Text>
           </View>
           <View style={styles.bottomRow}>
             <PillButton
               variant="secondary"
-              label={busy ? 'Done…' : 'Done'}
+              label={busy ? `${t('common.done')}…` : t('common.done')}
               icon="checkmark"
               onPress={markDone}
               disabled={busy}
@@ -114,19 +116,19 @@ export default function TodayHifzCard({ navigation }) {
           <View style={styles.row}>
             <Ionicons name="repeat-outline" size={18} color={C.accent} />
             <Text style={styles.text} numberOfLines={1}>
-              Review: {review.surahNameEn}{reviewExtra}
+              {t('hifz.reviewBadge')}: {review.surahNameEn}{reviewExtra}
             </Text>
           </View>
           <View style={styles.bottomRowSplit}>
             <PillButton
               variant="secondary"
-              label="Forgot"
+              label={t('hifz.forgot')}
               onPress={() => respondReview(reviewForgot)}
               disabled={reviewBusy}
             />
             <PillButton
               variant="secondary"
-              label="Remembered"
+              label={t('hifz.remembered')}
               icon="checkmark"
               onPress={() => respondReview(reviewRemembered)}
               disabled={reviewBusy}

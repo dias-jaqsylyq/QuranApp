@@ -15,16 +15,17 @@ import TodayHifzCard from '../components/TodayHifzCard';
 import AuthBenefitsSheet from '../components/AuthBenefitsSheet';
 import { CLOSE_DURATION } from '../components/settings/Sheet';
 import { useAyahOfTheDay } from '../hooks/useAyahOfTheDay';
+import { useI18n } from '../hooks/useI18n';
 import { loadProfileStats } from '../utils/profileStats';
 import { AYAH_OF_THE_DAY } from '../data/mockHome';
 
 const AUTH_PROMPT_DISMISSED_KEY = 'auth_prompt_dismissed';
 
-function getGreeting() {
+function getGreeting(t) {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good Morning';
-  if (hour < 18) return 'Good Afternoon';
-  return 'Good Evening';
+  if (hour < 12) return t('home.greetingMorning');
+  if (hour < 18) return t('home.greetingAfternoon');
+  return t('home.greetingEvening');
 }
 
 const makeStyles = (C) =>
@@ -86,6 +87,7 @@ const makeStyles = (C) =>
 export default function HomeScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const { isAuthenticated } = useAuth();
   const { defaultLang } = useSettings();
   const [segment, setSegment] = useState('today');
@@ -155,7 +157,7 @@ export default function HomeScreen({ navigation }) {
 
   const comingSoon = () => {
     hapticLight();
-    Alert.alert('Coming soon');
+    Alert.alert(t('common.comingSoon'));
   };
 
   return (
@@ -165,29 +167,29 @@ export default function HomeScreen({ navigation }) {
           style={[styles.segment, segment === 'today' && styles.segmentActive]}
           onPress={() => selectSegment('today')}
         >
-          <Text style={[styles.segmentText, segment === 'today' && styles.segmentTextActive]}>Today</Text>
+          <Text style={[styles.segmentText, segment === 'today' && styles.segmentTextActive]}>{t('home.segmentToday')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.segment, segment === 'community' && styles.segmentActive]}
           onPress={() => selectSegment('community')}
         >
-          <Text style={[styles.segmentText, segment === 'community' && styles.segmentTextActive]}>Community</Text>
+          <Text style={[styles.segmentText, segment === 'community' && styles.segmentTextActive]}>{t('home.segmentCommunity')}</Text>
         </TouchableOpacity>
       </View>
 
       {segment === 'community' ? (
         <View style={styles.placeholder}>
           <Ionicons name="people-outline" size={48} color={C.border} />
-          <Text style={styles.placeholderText}>Community feed coming soon</Text>
+          <Text style={styles.placeholderText}>{t('home.communityComingSoon')}</Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <View>
-              <Text style={styles.greeting}>{getGreeting()}</Text>
+              <Text style={styles.greeting}>{getGreeting(t)}</Text>
               <View style={styles.streakRow}>
                 <Ionicons name="flame-outline" size={14} color={C.accent} />
-                <Text style={styles.streakText}>{streak} day streak</Text>
+                <Text style={styles.streakText}>{t('home.dayStreak', { count: streak })}</Text>
               </View>
             </View>
           </View>
@@ -197,7 +199,7 @@ export default function HomeScreen({ navigation }) {
           <PrayerTimesCard />
 
           <LinearGradient colors={['#0D1B2A', '#1A3A2A']} style={styles.heroCard}>
-            <Text style={styles.heroLabel}>Ayah of the Day</Text>
+            <Text style={styles.heroLabel}>{t('home.ayahOfTheDay')}</Text>
             <Text style={styles.heroReference}>{ayah.reference}</Text>
             <Text style={styles.heroArabic}>{ayah.arabic}</Text>
             <Text style={styles.heroTranslation}>{ayahTranslation}</Text>
@@ -222,7 +224,7 @@ export default function HomeScreen({ navigation }) {
 
             {!dismissed && (
               <View style={styles.ctaRow}>
-                <PillButton variant="primary" label="Send Me This Daily" icon="notifications" onPress={comingSoon} style={{ flex: 1 }} />
+                <PillButton variant="primary" label={t('home.sendMeThisDaily')} icon="notifications" onPress={comingSoon} style={{ flex: 1 }} />
                 <TouchableOpacity style={styles.dismissBtn} onPress={() => { hapticLight(); setDismissed(true); }}>
                   <Ionicons name="close" size={20} color="#FFFFFF" />
                 </TouchableOpacity>

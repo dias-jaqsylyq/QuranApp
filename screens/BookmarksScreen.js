@@ -12,6 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight, medium as hapticMedium } from '../utils/haptics';
+import { useI18n } from '../hooks/useI18n';
 import { loadBookmarks, saveBookmarks } from '../utils/bookmarks';
 
 function buildSections(bookmarks) {
@@ -88,6 +89,7 @@ const makeStyles = (C) =>
 export default function BookmarksScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const [bookmarks, setBookmarks] = useState([]);
 
   useFocusEffect(
@@ -97,10 +99,10 @@ export default function BookmarksScreen({ navigation }) {
   );
 
   const deleteBookmark = (id) => {
-    Alert.alert('Remove Bookmark', 'Remove this verse from bookmarks?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('bookmarks.removeTitle'), t('bookmarks.removeMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Remove',
+        text: t('common.remove'),
         style: 'destructive',
         onPress: async () => {
           hapticMedium();
@@ -162,18 +164,22 @@ export default function BookmarksScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bookmarks</Text>
+        <Text style={styles.headerTitle}>{t('bookmarks.title')}</Text>
         {bookmarks.length > 0 && (
-          <Text style={styles.headerSub}>{bookmarks.length} saved verse{bookmarks.length !== 1 ? 's' : ''}</Text>
+          <Text style={styles.headerSub}>
+            {bookmarks.length === 1
+              ? t('bookmarks.savedCount', { count: bookmarks.length })
+              : t('bookmarks.savedCountPlural', { count: bookmarks.length })}
+          </Text>
         )}
       </View>
 
       {bookmarks.length === 0 ? (
         <View style={styles.center}>
           <Ionicons name="bookmark-outline" size={56} color={C.border} />
-          <Text style={styles.emptyTitle}>No bookmarks yet</Text>
+          <Text style={styles.emptyTitle}>{t('bookmarks.emptyTitle')}</Text>
           <Text style={styles.emptyHint}>
-            Long-press any verse while reading to save it here
+            {t('bookmarks.emptyHint')}
           </Text>
         </View>
       ) : (

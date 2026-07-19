@@ -7,6 +7,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight } from '../utils/haptics';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../hooks/useI18n';
 import AvatarView from '../components/AvatarView';
 import StatCard from '../components/StatCard';
 import SectionHeader from '../components/SectionHeader';
@@ -20,6 +21,14 @@ import { loadPlans } from '../utils/hifz';
 import { loadCircle, saveCircle } from '../utils/readingCircle';
 
 const TOTAL_SURAHS = 114;
+
+const FILTER_KEYS = {
+  All: 'profile.filterAll',
+  Highlights: 'profile.filterHighlights',
+  Notes: 'profile.filterNotes',
+  Plans: 'profile.filterPlans',
+  Badges: 'profile.filterBadges',
+};
 
 const makeStyles = (C) =>
   StyleSheet.create({
@@ -78,6 +87,7 @@ const makeStyles = (C) =>
 export default function ProfileScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const { isAuthenticated } = useAuth();
   const [filter, setFilter] = useState('All');
 
@@ -129,7 +139,7 @@ export default function ProfileScreen({ navigation }) {
 
   const comingSoon = () => {
     hapticLight();
-    Alert.alert('Coming soon');
+    Alert.alert(t('common.comingSoon'));
   };
 
   const goToSettings = () => {
@@ -168,10 +178,10 @@ export default function ProfileScreen({ navigation }) {
   const showBadges = () => {
     hapticLight();
     if (stats.earnedBadges.length === 0) {
-      Alert.alert('Badges', 'No badges yet — keep reading to earn your first one!');
+      Alert.alert(t('profile.badges'), t('profile.badgesEmpty'));
       return;
     }
-    Alert.alert('Badges Earned', stats.earnedBadges.map((b) => `• ${b.label}`).join('\n'));
+    Alert.alert(t('profile.badgesEarned'), stats.earnedBadges.map((b) => `• ${b.label}`).join('\n'));
   };
 
   const openBookmarks = () => {
@@ -216,24 +226,24 @@ export default function ProfileScreen({ navigation }) {
             {profile.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
 
             <View style={styles.pillRow}>
-              <PillButton variant="secondary" label="Add Person" icon="person-add-outline" onPress={openCircle} style={{ flex: 1 }} />
-              <PillButton variant="secondary" label={`Circle (${circle.length})`} icon="people-outline" onPress={openCircle} style={{ flex: 1 }} />
+              <PillButton variant="secondary" label={t('profile.addPerson')} icon="person-add-outline" onPress={openCircle} style={{ flex: 1 }} />
+              <PillButton variant="secondary" label={t('profile.circleCount', { count: circle.length })} icon="people-outline" onPress={openCircle} style={{ flex: 1 }} />
             </View>
 
             <View style={styles.actionRow}>
               <TouchableOpacity style={styles.actionCard} onPress={openBookmarks} activeOpacity={0.7}>
                 <Ionicons name="bookmark-outline" size={22} color={C.text} />
-                <Text style={styles.actionLabel}>Saved</Text>
+                <Text style={styles.actionLabel}>{t('profile.saved')}</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.statRow}>
-              <StatCard value={stats.streak} label="Reading Streak" icon="flame-outline" />
-              <StatCard value={stats.earnedBadges.length} label="Badges" icon="ribbon-outline" onPress={showBadges} />
-              <StatCard value={`${memorizedCount}/${TOTAL_SURAHS}`} label="Memorized" icon="book-outline" />
+              <StatCard value={stats.streak} label={t('profile.readingStreak')} icon="flame-outline" />
+              <StatCard value={stats.earnedBadges.length} label={t('profile.badges')} icon="ribbon-outline" onPress={showBadges} />
+              <StatCard value={`${memorizedCount}/${TOTAL_SURAHS}`} label={t('profile.memorized')} icon="book-outline" />
             </View>
 
-            <SectionHeader title="Activity" />
+            <SectionHeader title={t('profile.activity')} />
             <View style={styles.filterRow}>
               {ACTIVITY_FILTERS.map((item) => {
                 const active = filter === item;
@@ -243,7 +253,9 @@ export default function ProfileScreen({ navigation }) {
                     style={[styles.filterPill, active && styles.filterPillActive]}
                     onPress={() => { hapticLight(); setFilter(item); }}
                   >
-                    <Text style={[styles.filterText, active && styles.filterTextActive]}>{item}</Text>
+                    <Text style={[styles.filterText, active && styles.filterTextActive]}>
+                      {t(FILTER_KEYS[item] || item)}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -251,7 +263,7 @@ export default function ProfileScreen({ navigation }) {
 
             <View style={styles.emptyState}>
               <Ionicons name="time-outline" size={36} color={C.border} />
-              <Text style={styles.emptyText}>No activity yet</Text>
+              <Text style={styles.emptyText}>{t('profile.noActivityYet')}</Text>
             </View>
           </>
         ) : (
@@ -259,13 +271,13 @@ export default function ProfileScreen({ navigation }) {
             <View style={styles.lockedIcon}>
               <Ionicons name="person-outline" size={32} color={C.textSecondary} />
             </View>
-            <Text style={styles.lockedTitle}>Sign in to QuranApp</Text>
+            <Text style={styles.lockedTitle}>{t('profile.signInTitle')}</Text>
             <Text style={styles.lockedSubtitle}>
-              Create a free account to sync your Daily Khatm plan, bookmarks, and Reading Circle across devices.
+              {t('profile.signInSubtitle')}
             </Text>
             <View style={styles.lockedButtons}>
-              <PillButton variant="primary" label="Create an Account" onPress={() => goToAuth('signup')} />
-              <PillButton variant="secondary" label="Sign In" onPress={() => goToAuth('signin')} />
+              <PillButton variant="primary" label={t('profile.createAnAccount')} onPress={() => goToAuth('signup')} />
+              <PillButton variant="secondary" label={t('profile.signIn')} onPress={() => goToAuth('signin')} />
             </View>
           </View>
         )}
@@ -278,7 +290,7 @@ export default function ProfileScreen({ navigation }) {
         statusBarTranslucent
         onRequestClose={() => setCircleOpen(false)}
       >
-        <Sheet visible={circleOpen} onClose={() => setCircleOpen(false)} title="Reading Circle">
+        <Sheet visible={circleOpen} onClose={() => setCircleOpen(false)} title={t('profile.readingCircle')}>
           <ReadingCircleSheet circle={circle} onAdd={addCircleEntry} onRemove={removeCircleEntry} />
         </Sheet>
       </Modal>

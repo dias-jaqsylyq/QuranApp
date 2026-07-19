@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme/colors';
+import { useI18n } from '../../hooks/useI18n';
 import { TRANSLATION_OPTIONS } from '../../data/translations';
 import PreviewBox from './PreviewBox';
 import FontSizeControl from './FontSizeControl';
@@ -26,6 +27,7 @@ const makeStyles = (C, scale) =>
 
 export default function TranslationPanel({ defaultLang, onSelectLang, fontSize, onFontSizeChange, previewVerse }) {
   const C = useTheme();
+  const { t } = useI18n();
   const scale = FONT_SCALE[fontSize] ?? 1.0;
   const styles = useMemo(() => makeStyles(C, scale), [C, scale]);
 
@@ -39,7 +41,7 @@ export default function TranslationPanel({ defaultLang, onSelectLang, fontSize, 
 
       <FontSizeControl value={fontSize} onChange={onFontSizeChange} />
 
-      <SectionLabel>Available languages</SectionLabel>
+      <SectionLabel>{t('settings.availableLanguages')}</SectionLabel>
       <View>
         {TRANSLATION_OPTIONS.map((opt, i) => (
           <OptionRow

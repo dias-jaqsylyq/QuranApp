@@ -4,7 +4,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { light as hapticLight } from '../utils/haptics';
-import { loadPlans, summarizeToday, pluralAyah } from '../utils/hifz';
+import { useI18n } from '../hooks/useI18n';
+import { loadPlans, summarizeToday } from '../utils/hifz';
 
 const GRADIENT = ['#0D1B2A', '#1A3A2A'];
 
@@ -24,6 +25,7 @@ const styles = StyleSheet.create({
 });
 
 export default function GoalProgressCard({ onPress }) {
+  const { t } = useI18n();
   const [summary, setSummary] = useState(null);
 
   useFocusEffect(
@@ -34,11 +36,11 @@ export default function GoalProgressCard({ onPress }) {
 
   const subtitle = useMemo(() => {
     if (!summary) return ' ';
-    if (!summary.hasAnyPlan) return 'Start with your first surah';
-    if (!summary.hasOpenTarget) return 'Done for today — great work';
+    if (!summary.hasAnyPlan) return t('hifz.startFirstSurah');
+    if (!summary.hasOpenTarget) return t('hifz.doneForToday');
     const extra = summary.moreCount > 0 ? ` · +${summary.moreCount} more` : '';
-    return `${summary.ayahsToday} ${pluralAyah(summary.ayahsToday)} left · ${summary.surahNameEn}${extra}`;
-  }, [summary]);
+    return `${t('hifz.ayahsLeft', { count: summary.ayahsToday, surah: summary.surahNameEn })}${extra}`;
+  }, [summary, t]);
 
   const handlePress = () => {
     hapticLight();
@@ -49,7 +51,7 @@ export default function GoalProgressCard({ onPress }) {
     <TouchableOpacity activeOpacity={0.85} onPress={handlePress}>
       <LinearGradient colors={GRADIENT} style={styles.card}>
         <View style={styles.textWrap}>
-          <Text style={styles.label}>Quran Memorization</Text>
+          <Text style={styles.label}>{t('hifz.goalCardLabel')}</Text>
           <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.6)" />

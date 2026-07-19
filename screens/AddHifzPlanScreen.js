@@ -3,6 +3,7 @@ import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Activity
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
+import { useI18n } from '../hooks/useI18n';
 import { useSurahList } from '../hooks/useQuranData';
 import { light as hapticLight, success as hapticSuccess } from '../utils/haptics';
 import {
@@ -66,6 +67,7 @@ const makeStyles = (C) =>
 export default function AddHifzPlanScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const { surahs, loading } = useSurahList();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(null);
@@ -122,7 +124,7 @@ export default function AddHifzPlanScreen({ navigation }) {
           <Ionicons name="search" size={18} color={C.textSecondary} />
           <TextInput
             style={styles.input}
-            placeholder="Search surahs…"
+            placeholder={t('hifz.searchPlaceholder')}
             placeholderTextColor={C.textSecondary}
             value={query}
             onChangeText={setQuery}
@@ -137,7 +139,7 @@ export default function AddHifzPlanScreen({ navigation }) {
             <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={() => selectSurah(item)}>
               <View>
                 <Text style={styles.rowName}>{item.englishName}</Text>
-                <Text style={styles.rowMeta}>{item.numberOfAyahs} ayahs</Text>
+                <Text style={styles.rowMeta}>{item.numberOfAyahs} {t('common.verses')}</Text>
               </View>
               <Text style={styles.rowArabic}>{item.name}</Text>
             </TouchableOpacity>
@@ -149,7 +151,7 @@ export default function AddHifzPlanScreen({ navigation }) {
               </View>
             ) : (
               <View style={styles.center}>
-                <Text style={styles.emptyText}>No surahs found</Text>
+                <Text style={styles.emptyText}>{t('hifz.noSurahsFound')}</Text>
               </View>
             )
           }
@@ -164,16 +166,16 @@ export default function AddHifzPlanScreen({ navigation }) {
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.selectedWrap}>
         <TouchableOpacity style={styles.changeLink} onPress={() => setSelected(null)}>
-          <Text style={styles.changeLinkText}>← Change surah</Text>
+          <Text style={styles.changeLinkText}>{t('hifz.changeSurah')}</Text>
         </TouchableOpacity>
         <Text style={styles.selectedTitle}>{selected.englishName}</Text>
-        <Text style={styles.selectedSubtitle}>{selected.numberOfAyahs} ayahs</Text>
+        <Text style={styles.selectedSubtitle}>{selected.numberOfAyahs} {t('common.verses')}</Text>
 
         <View style={styles.card}>
-          <Stepper label="Days for this surah" value={days} min={1} max={selected.numberOfAyahs} onChange={changeDays} />
+          <Stepper label={t('hifz.daysForSurah')} value={days} min={1} max={selected.numberOfAyahs} onChange={changeDays} />
           <View style={styles.cardDivider} />
           <Stepper
-            label="Ayahs per day"
+            label={t('hifz.ayahsPerDay')}
             value={ayahsPerDay}
             min={1}
             max={selected.numberOfAyahs}
@@ -182,11 +184,11 @@ export default function AddHifzPlanScreen({ navigation }) {
           <View style={styles.cardDivider} />
           <View style={styles.estimateRow}>
             <Ionicons name="flag-outline" size={14} color={C.textSecondary} />
-            <Text style={styles.estimateText}>Estimated finish: {formatFinishDate(days)}</Text>
+            <Text style={styles.estimateText}>{t('hifz.estimatedFinish', { date: formatFinishDate(days) })}</Text>
           </View>
         </View>
 
-        <PillButton variant="primary" label="Start Memorizing" icon="bookmark" onPress={startPlan} style={styles.ctaBtn} />
+        <PillButton variant="primary" label={t('hifz.startMemorizing')} icon="bookmark" onPress={startPlan} style={styles.ctaBtn} />
       </View>
     </SafeAreaView>
   );

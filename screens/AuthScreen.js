@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight } from '../utils/haptics';
+import { useI18n } from '../hooks/useI18n';
 import { useAuth } from '../context/AuthContext';
 import PillButton from '../components/PillButton';
 import SocialAuthButton from '../components/SocialAuthButton';
@@ -57,6 +58,7 @@ const makeStyles = (C) =>
 export default function AuthScreen({ navigation, route }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const { signInWithOAuth, signUpWithEmail, signInWithEmail } = useAuth();
 
   const initialMode = route.params?.initialMode === 'signin' ? 'signin' : 'signup';
@@ -73,7 +75,7 @@ export default function AuthScreen({ navigation, route }) {
 
   const comingSoon = () => {
     hapticLight();
-    Alert.alert('Coming soon');
+    Alert.alert(t('common.comingSoon'));
   };
 
   const handleOAuth = async (provider) => {
@@ -83,7 +85,7 @@ export default function AuthScreen({ navigation, route }) {
       const session = await signInWithOAuth(provider);
       if (session) navigation.goBack();
     } catch (err) {
-      Alert.alert('Couldn’t sign in', err.message);
+      Alert.alert(t('auth.couldntSignIn'), err.message);
     } finally {
       setLoading(false);
     }
@@ -107,7 +109,7 @@ export default function AuthScreen({ navigation, route }) {
   const submitEmail = async () => {
     hapticLight();
     if (!email.trim() || !password) {
-      Alert.alert('Missing info', 'Enter both an email and a password.');
+      Alert.alert(t('auth.missingInfoTitle'), t('auth.missingInfoMessage'));
       return;
     }
     setLoading(true);
@@ -120,8 +122,8 @@ export default function AuthScreen({ navigation, route }) {
           // Email confirmation is on by default for new Supabase projects —
           // signUp succeeds but returns no session until the link is clicked.
           Alert.alert(
-            'Check your email',
-            `We sent a confirmation link to ${email.trim()}. Confirm it, then sign in.`,
+            t('auth.checkEmailTitle'),
+            t('auth.checkEmailMessage', { email: email.trim() }),
           );
           setAuthMode('signin');
         }
@@ -130,7 +132,7 @@ export default function AuthScreen({ navigation, route }) {
         navigation.goBack();
       }
     } catch (err) {
-      Alert.alert('Something went wrong', err.message);
+      Alert.alert(t('common.somethingWentWrong'), err.message);
     } finally {
       setLoading(false);
     }
@@ -150,10 +152,10 @@ export default function AuthScreen({ navigation, route }) {
             <>
               <View style={styles.titleBlock}>
                 <Text style={styles.title}>
-                  {authMode === 'signup' ? 'Create your account' : 'Welcome back'}
+                  {authMode === 'signup' ? t('auth.createAccountTitle') : t('auth.welcomeBack')}
                 </Text>
                 <Text style={styles.subtitle}>
-                  Sync your Daily Khatm progress, bookmarks, and Reading Circle across every device.
+                  {t('auth.subtitle')}
                 </Text>
               </View>
 
@@ -179,32 +181,32 @@ export default function AuthScreen({ navigation, route }) {
               {loading && <ActivityIndicator style={{ marginTop: 8 }} color={C.textSecondary} />}
 
               <Text style={styles.legalText}>
-                By continuing, you agree to our{' '}
-                <Text style={styles.legalLink} onPress={comingSoon}>Terms of Service</Text>
-                {' '}and{' '}
-                <Text style={styles.legalLink} onPress={comingSoon}>Privacy Policy</Text>.
+                {t('auth.legalPrefix')}{' '}
+                <Text style={styles.legalLink} onPress={comingSoon}>{t('auth.termsOfService')}</Text>
+                {' '}{t('auth.and')}{' '}
+                <Text style={styles.legalLink} onPress={comingSoon}>{t('auth.privacyPolicy')}</Text>.
               </Text>
             </>
           ) : (
             <>
               <TouchableOpacity style={styles.backLink} onPress={backToSocial}>
-                <Text style={styles.backLinkText}>‹ Back</Text>
+                <Text style={styles.backLinkText}>{t('common.back')}</Text>
               </TouchableOpacity>
 
               <View style={styles.titleBlock}>
                 <Text style={styles.title}>
-                  {authMode === 'signup' ? 'Create your account' : 'Sign in'}
+                  {authMode === 'signup' ? t('auth.createAccountTitle') : t('auth.signInTitle')}
                 </Text>
               </View>
 
               <View style={styles.fieldsCard}>
                 <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Email</Text>
+                  <Text style={styles.fieldLabel}>{t('auth.email')}</Text>
                   <TextInput
                     style={styles.fieldInput}
                     value={email}
                     onChangeText={setEmail}
-                    placeholder="you@example.com"
+                    placeholder={t('auth.emailPlaceholder')}
                     placeholderTextColor={C.textSecondary}
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -213,7 +215,7 @@ export default function AuthScreen({ navigation, route }) {
                   />
                 </View>
                 <View style={[styles.field, styles.fieldDivider]}>
-                  <Text style={styles.fieldLabel}>Password</Text>
+                  <Text style={styles.fieldLabel}>{t('auth.password')}</Text>
                   <TextInput
                     style={styles.fieldInput}
                     value={password}
@@ -226,12 +228,12 @@ export default function AuthScreen({ navigation, route }) {
                 </View>
               </View>
               {authMode === 'signup' && (
-                <Text style={styles.hint}>Must be at least 6 characters.</Text>
+                <Text style={styles.hint}>{t('auth.passwordHint')}</Text>
               )}
 
               <PillButton
                 variant="primary"
-                label={authMode === 'signup' ? 'Create Account' : 'Sign In'}
+                label={authMode === 'signup' ? t('auth.createAccount') : t('auth.signIn')}
                 onPress={submitEmail}
                 disabled={loading}
               />
@@ -240,9 +242,9 @@ export default function AuthScreen({ navigation, route }) {
               <View style={styles.switchRow}>
                 <TouchableOpacity onPress={toggleAuthMode}>
                   <Text style={styles.switchText}>
-                    {authMode === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
+                    {authMode === 'signup' ? `${t('auth.haveAccount')} ` : `${t('auth.noAccount')} `}
                     <Text style={styles.switchLink}>
-                      {authMode === 'signup' ? 'Sign In' : 'Sign Up'}
+                      {authMode === 'signup' ? t('auth.signIn') : t('auth.signUp')}
                     </Text>
                   </Text>
                 </TouchableOpacity>

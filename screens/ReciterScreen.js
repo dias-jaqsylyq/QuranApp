@@ -13,6 +13,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { RECITERS, DEFAULT_RECITER } from '../data/reciters';
 import { useTheme } from '../theme/colors';
 import { medium } from '../utils/haptics';
+import { useI18n } from '../hooks/useI18n';
 import ReciterRow from '../components/ReciterRow';
 
 const STORAGE_KEY = 'selected_reciter';
@@ -52,6 +53,7 @@ const makeStyles = (C) =>
 export default function ReciterScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
 
   const [selectedId, setSelectedId] = useState(DEFAULT_RECITER.id);
 
@@ -83,9 +85,9 @@ export default function ReciterScreen({ navigation }) {
           <TouchableOpacity style={styles.backBtn} onPress={() => { medium(); navigation.goBack(); }}>
             <Ionicons name="chevron-back" size={24} color={C.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Reciters</Text>
+          <Text style={styles.headerTitle}>{t('settings.recitersTitle')}</Text>
         </View>
-        <Text style={styles.headerSub}>Choose your preferred reciter</Text>
+        <Text style={styles.headerSub}>{t('settings.recitersSubtitle')}</Text>
       </View>
 
       <FlatList

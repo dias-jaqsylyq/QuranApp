@@ -14,5 +14,5 @@ export const QUICK_LINKS = [
   { id: 'bookmarks', title: 'Bookmarks', icon: 'bookmark-outline' },
   { id: 'audio', title: 'Audio', icon: 'headset-outline' },
   { id: 'mosques', title: 'Mosques', icon: 'business-outline' },
-  { id: 'scholars', title: 'Scholars', icon: 'school-outline' },
+  { id: 'qibla', title: 'Qibla Direction', icon: 'compass-outline' },
 ];

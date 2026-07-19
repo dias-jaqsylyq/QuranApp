@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
+import { useI18n } from '../hooks/useI18n';
 import { light as hapticLight } from '../utils/haptics';
 import { useAuth } from '../context/AuthContext';
 import AvatarView from '../components/AvatarView';
@@ -70,6 +71,7 @@ const makeStyles = (C) =>
 export default function EditProfileScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const { user, deleteAccount } = useAuth();
   const [firstName, setFirstName] = useState(MOCK_PROFILE.displayName);
   const [lastName, setLastName] = useState('');
@@ -120,7 +122,7 @@ export default function EditProfileScreen({ navigation }) {
 
   const comingSoon = () => {
     hapticLight();
-    Alert.alert('Coming soon');
+    Alert.alert(t('common.comingSoon'));
   };
 
   // TODO: this clears the user's cloud sync rows, session, and local data,
@@ -131,19 +133,19 @@ export default function EditProfileScreen({ navigation }) {
   const confirmDelete = () => {
     hapticLight();
     Alert.alert(
-      'Delete Account',
-      'This removes your synced data and signs you out on this device. Are you sure?',
+      t('settings.deleteAccount'),
+      t('settings.deleteAccountMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteAccount();
               navigation.navigate('Profile');
             } catch (err) {
-              Alert.alert('Something went wrong', err.message);
+              Alert.alert(t('common.somethingWentWrong'), err.message);
             }
           },
         },
@@ -157,8 +159,8 @@ export default function EditProfileScreen({ navigation }) {
         <TouchableOpacity style={styles.backBtn} onPress={goBack}>
           <Ionicons name="chevron-back" size={24} color={C.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
-        <PillButton variant="primary" label="Save" onPress={handleSave} />
+        <Text style={styles.headerTitle}>{t('settings.editProfile')}</Text>
+        <PillButton variant="primary" label={t('common.save')} onPress={handleSave} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -174,23 +176,23 @@ export default function EditProfileScreen({ navigation }) {
 
         <View style={styles.fieldsCard}>
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>First Name</Text>
+            <Text style={styles.fieldLabel}>{t('settings.firstName')}</Text>
             <TextInput style={styles.fieldInput} value={firstName} onChangeText={setFirstName} placeholderTextColor={C.textSecondary} />
           </View>
           <View style={[styles.field, styles.fieldDivider]}>
-            <Text style={styles.fieldLabel}>Last Name</Text>
+            <Text style={styles.fieldLabel}>{t('settings.lastName')}</Text>
             <TextInput style={styles.fieldInput} value={lastName} onChangeText={setLastName} placeholderTextColor={C.textSecondary} />
           </View>
         </View>
 
         <View style={[styles.fieldsCard, { marginTop: 16 }]}>
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Location</Text>
+            <Text style={styles.fieldLabel}>{t('settings.location')}</Text>
             <TextInput
               style={styles.fieldInput}
               value={location}
               onChangeText={setLocation}
-              placeholder="Add your location"
+              placeholder={t('settings.locationPlaceholder')}
               placeholderTextColor={C.textSecondary}
             />
           </View>
@@ -198,14 +200,14 @@ export default function EditProfileScreen({ navigation }) {
 
         <View style={styles.bioCard}>
           <View style={styles.bioHeaderRow}>
-            <Text style={styles.bioLabel}>Bio</Text>
+            <Text style={styles.bioLabel}>{t('settings.bio')}</Text>
             <Text style={styles.bioCounter}>{bio.length}/160</Text>
           </View>
           <TextInput
             style={styles.bioInput}
             value={bio}
             onChangeText={setBio}
-            placeholder="Tell us about yourself"
+            placeholder={t('settings.bioPlaceholder')}
             placeholderTextColor={C.textSecondary}
             multiline
             maxLength={160}
@@ -213,12 +215,12 @@ export default function EditProfileScreen({ navigation }) {
         </View>
 
         <View style={styles.privateCard}>
-          <SettingsRow icon="mail-outline" label="Email" value={user?.email ?? 'Not signed in'} chevron isFirst onPress={comingSoon} />
-          <SettingsRow icon="notifications-outline" label="Notification Settings" chevron onPress={comingSoon} />
+          <SettingsRow icon="mail-outline" label={t('settings.email')} value={user?.email ?? t('common.notSignedIn')} chevron isFirst onPress={comingSoon} />
+          <SettingsRow icon="notifications-outline" label={t('settings.notificationSettings')} chevron onPress={comingSoon} />
         </View>
 
         <View style={styles.deleteRow}>
-          <SettingsRow icon="trash-outline" label="Delete Account" destructive chevron isFirst onPress={confirmDelete} />
+          <SettingsRow icon="trash-outline" label={t('settings.deleteAccount')} destructive chevron isFirst onPress={confirmDelete} />
         </View>
       </ScrollView>
     </SafeAreaView>

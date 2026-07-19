@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
+import { useI18n } from '../hooks/useI18n';
 import { useSurahList } from '../hooks/useQuranData';
 import { light as hapticLight } from '../utils/haptics';
 import { buildAlreadyMemorizedPlan } from '../utils/hifz';
@@ -39,6 +40,7 @@ const makeStyles = (C) =>
 export default function MarkMemorizedSheet({ existingPlans, onSave }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const { surahs, loading } = useSurahList();
   const [checked, setChecked] = useState(() => new Set());
 
@@ -76,9 +78,7 @@ export default function MarkMemorizedSheet({ existingPlans, onSave }) {
 
   return (
     <View style={styles.body}>
-      <Text style={styles.hint}>
-        Mark the surahs you already know by heart — they'll go straight into "Memorized", no need to redo them.
-      </Text>
+      <Text style={styles.hint}>{t('hifz.markHint')}</Text>
       <FlatList
         style={styles.list}
         data={surahs}
@@ -95,7 +95,7 @@ export default function MarkMemorizedSheet({ existingPlans, onSave }) {
               onPress={() => toggle(item.number)}
             >
               <Text style={[styles.rowLabel, already && styles.rowLabelDisabled]}>
-                {item.englishName}{already ? ' · already added' : ''}
+                {item.englishName}{already ? ` · ${t('hifz.alreadyAdded')}` : ''}
               </Text>
               <View style={[styles.checkbox, isChecked && styles.checkboxChecked]}>
                 {isChecked ? <Ionicons name="checkmark" size={14} color="#FFFFFF" /> : null}
@@ -106,7 +106,7 @@ export default function MarkMemorizedSheet({ existingPlans, onSave }) {
       />
       <PillButton
         variant="primary"
-        label={checked.size > 0 ? `Save (${checked.size})` : 'Save'}
+        label={checked.size > 0 ? t('hifz.saveCount', { count: checked.size }) : t('common.save')}
         onPress={save}
         disabled={checked.size === 0}
         style={styles.saveBtn}

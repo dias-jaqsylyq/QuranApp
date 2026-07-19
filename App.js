@@ -15,6 +15,7 @@ import DailyKhatmScreen from './screens/DailyKhatmScreen';
 import HifzHomeScreen from './screens/HifzHomeScreen';
 import AddHifzPlanScreen from './screens/AddHifzPlanScreen';
 import BookmarksScreen from './screens/BookmarksScreen';
+import QiblaScreen from './screens/QiblaScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -24,6 +25,7 @@ import CustomTabBar from './components/CustomTabBar';
 import { AppProvider } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useTheme } from './theme/colors';
+import { useI18n } from './hooks/useI18n';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,6 +37,7 @@ const MemorizeStack = createNativeStackNavigator();
 
 function QuranNavigator() {
   const C = useTheme();
+  const { t } = useI18n();
   return (
     <QuranStack.Navigator
       screenOptions={{
@@ -55,9 +58,9 @@ function QuranNavigator() {
         component={SurahReaderScreen}
         options={({ route }) => ({
           title: route.params?.pageNumber != null
-            ? `Page ${route.params.pageNumber}`
-            : (route.params?.surahNameEn ?? 'Surah'),
-          headerBackTitle: 'Quran',
+            ? t('common.pageN', { n: route.params.pageNumber })
+            : (route.params?.surahNameEn ?? t('common.surah')),
+          headerBackTitle: t('quran.headerBack'),
         })}
       />
     </QuranStack.Navigator>
@@ -78,6 +81,7 @@ function ProfileNavigator() {
 
 function DiscoverNavigator() {
   const C = useTheme();
+  const { t } = useI18n();
   return (
     <DiscoverStack.Navigator
       screenOptions={{
@@ -96,12 +100,17 @@ function DiscoverNavigator() {
       <DiscoverStack.Screen
         name="DailyKhatm"
         component={DailyKhatmScreen}
-        options={{ title: 'Daily Khatm', headerBackTitle: 'Discover' }}
+        options={{ title: t('khatm.navTitle'), headerBackTitle: t('khatm.headerBack') }}
       />
       <DiscoverStack.Screen
         name="Bookmarks"
         component={BookmarksScreen}
         options={{ headerShown: false }}
+      />
+      <DiscoverStack.Screen
+        name="Qibla"
+        component={QiblaScreen}
+        options={{ title: t('qibla.navTitle'), headerBackTitle: t('qibla.headerBack') }}
       />
     </DiscoverStack.Navigator>
   );
@@ -109,6 +118,7 @@ function DiscoverNavigator() {
 
 function MemorizeNavigator() {
   const C = useTheme();
+  const { t } = useI18n();
   return (
     <MemorizeStack.Navigator
       screenOptions={{
@@ -127,7 +137,7 @@ function MemorizeNavigator() {
       <MemorizeStack.Screen
         name="AddHifzPlan"
         component={AddHifzPlanScreen}
-        options={{ title: 'Add Surah', headerBackTitle: 'Memorization' }}
+        options={{ title: t('hifz.addSurahTitle'), headerBackTitle: t('hifz.headerBack') }}
       />
     </MemorizeStack.Navigator>
   );

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DEFAULT_TAFSIR } from '../utils/tafsir';
 
 export const AppContext = createContext({
   effectiveScheme: 'light',
@@ -12,6 +13,9 @@ export const AppContext = createContext({
   setDefaultLang: () => {},
   showAudioProgress: true,
   setShowAudioProgress: () => {},
+  tafsirId: DEFAULT_TAFSIR.id,
+  tafsirSlug: DEFAULT_TAFSIR.slug,
+  setTafsirEdition: () => {},
 });
 
 export function AppProvider({ children }) {
@@ -20,9 +24,18 @@ export function AppProvider({ children }) {
   const [fontSize, setFontSizeState] = useState('medium');
   const [defaultLang, setDefaultLangState] = useState('en');
   const [showAudioProgress, setShowAudioProgressState] = useState(true);
+  const [tafsirId, setTafsirIdState] = useState(DEFAULT_TAFSIR.id);
+  const [tafsirSlug, setTafsirSlugState] = useState(DEFAULT_TAFSIR.slug);
 
   useEffect(() => {
-    AsyncStorage.multiGet(['colorMode', 'fontSize', 'defaultLang', 'showAudioProgress']).then(pairs => {
+    AsyncStorage.multiGet([
+      'colorMode',
+      'fontSize',
+      'defaultLang',
+      'showAudioProgress',
+      'tafsirId',
+      'tafsirSlug',
+    ]).then((pairs) => {
       const map = Object.fromEntries(pairs.map(([k, v]) => [k, v]));
       if (map.colorMode === 'light' || map.colorMode === 'dark') {
         setColorModeState(map.colorMode);
@@ -35,6 +48,13 @@ export function AppProvider({ children }) {
       }
       if (map.showAudioProgress != null) {
         setShowAudioProgressState(map.showAudioProgress !== '0');
+      }
+      if (map.tafsirId) {
+        const parsed = parseInt(map.tafsirId, 10);
+        if (!Number.isNaN(parsed)) setTafsirIdState(parsed);
+      }
+      if (map.tafsirSlug) {
+        setTafsirSlugState(map.tafsirSlug);
       }
     });
   }, []);
@@ -59,6 +79,15 @@ export function AppProvider({ children }) {
     await AsyncStorage.setItem('showAudioProgress', val ? '1' : '0');
   };
 
+  const setTafsirEdition = async ({ id, slug }) => {
+    setTafsirIdState(id);
+    setTafsirSlugState(slug);
+    await AsyncStorage.multiSet([
+      ['tafsirId', String(id)],
+      ['tafsirSlug', slug],
+    ]);
+  };
+
   const effectiveScheme = colorMode ?? system ?? 'light';
 
   const value = useMemo(
@@ -72,8 +101,11 @@ export function AppProvider({ children }) {
       setDefaultLang,
       showAudioProgress,
       setShowAudioProgress,
+      tafsirId,
+      tafsirSlug,
+      setTafsirEdition,
     }),
-    [effectiveScheme, colorMode, fontSize, defaultLang, showAudioProgress],
+    [effectiveScheme, colorMode, fontSize, defaultLang, showAudioProgress, tafsirId, tafsirSlug],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

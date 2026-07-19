@@ -18,7 +18,27 @@ import { light as hapticLight } from '../utils/haptics';
 import SectionHeader from '../components/SectionHeader';
 import GradientTopicCard from '../components/GradientTopicCard';
 import GoalProgressCard from '../components/GoalProgressCard';
+import { useI18n } from '../hooks/useI18n';
 import { QUICK_LINKS, TOPICS } from '../data/mockTopics';
+
+const QUICK_LINK_KEYS = {
+  plans: 'discover.quickDailyKhatm',
+  bookmarks: 'discover.quickBookmarks',
+  audio: 'discover.quickAudio',
+  mosques: 'discover.quickMosques',
+  qibla: 'discover.quickQibla',
+};
+
+const TOPIC_KEYS = {
+  love: 'discover.topicLove',
+  anxiety: 'discover.topicAnxiety',
+  patience: 'discover.topicPatience',
+  hope: 'discover.topicHope',
+  gratitude: 'discover.topicGratitude',
+  peace: 'discover.topicPeace',
+  fear: 'discover.topicFear',
+  stress: 'discover.topicStress',
+};
 
 const makeStyles = (C) =>
   StyleSheet.create({
@@ -123,6 +143,7 @@ function HexBadge({ number, accent }) {
 export default function SearchScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const { surahs, loading } = useSurahList();
   const [query, setQuery] = useState('');
 
@@ -147,7 +168,7 @@ export default function SearchScreen({ navigation }) {
 
   const comingSoon = () => {
     hapticLight();
-    Alert.alert('Coming soon');
+    Alert.alert(t('common.comingSoon'));
   };
 
   const openQuickLink = (link) => {
@@ -159,6 +180,11 @@ export default function SearchScreen({ navigation }) {
     if (link.id === 'bookmarks') {
       hapticLight();
       navigation.navigate('Bookmarks');
+      return;
+    }
+    if (link.id === 'qibla') {
+      hapticLight();
+      navigation.navigate('Qibla');
       return;
     }
     comingSoon();
@@ -173,6 +199,7 @@ export default function SearchScreen({ navigation }) {
     const isMeccan = item.revelationType === 'Meccan';
     const badgeBg = isMeccan ? C.meccan : C.medinan;
     const badgeColor = isMeccan ? C.meccanText : C.medianText;
+    const revelationLabel = isMeccan ? t('quran.meccan') : t('quran.medinan');
     return (
       <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={() => openSurah(item)}>
         <View style={styles.hexWrap}>
@@ -183,11 +210,11 @@ export default function SearchScreen({ navigation }) {
           <Text style={styles.surahTranslation}>{item.englishNameTranslation}</Text>
           <View style={styles.rowMeta}>
             <Ionicons name="list-outline" size={12} color={C.accent} />
-            <Text style={styles.verseCount}>{item.numberOfAyahs} verses</Text>
+            <Text style={styles.verseCount}>{item.numberOfAyahs} {t('common.verses')}</Text>
           </View>
           {item.revelationType ? (
             <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-              <Text style={[styles.badgeText, { color: badgeColor }]}>{item.revelationType}</Text>
+              <Text style={[styles.badgeText, { color: badgeColor }]}>{revelationLabel}</Text>
             </View>
           ) : null}
         </View>
@@ -201,14 +228,14 @@ export default function SearchScreen({ navigation }) {
   const ListHeader = (
     <View>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Discover</Text>
+        <Text style={styles.headerTitle}>{t('discover.title')}</Text>
       </View>
 
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color={C.textSecondary} />
         <TextInput
           style={styles.input}
-          placeholder="Search surahs…"
+          placeholder={t('discover.searchPlaceholder')}
           placeholderTextColor={C.textSecondary}
           value={query}
           onChangeText={setQuery}
@@ -229,22 +256,26 @@ export default function SearchScreen({ navigation }) {
         {QUICK_LINKS.map((link) => (
           <TouchableOpacity key={link.id} style={styles.quickLinkCell} onPress={() => openQuickLink(link)} activeOpacity={0.7}>
             <Ionicons name={link.icon} size={18} color={C.text} />
-            <Text style={styles.quickLinkLabel}>{link.title}</Text>
+            <Text style={styles.quickLinkLabel}>{t(QUICK_LINK_KEYS[link.id] || link.title)}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <SectionHeader title="Browse by Topic" />
+      <SectionHeader title={t('discover.browseByTopic')} />
       <View style={styles.topicGrid}>
         {TOPICS.map((topic) => (
           <View key={topic.id} style={styles.topicCell}>
-            <GradientTopicCard title={topic.title} colors={topic.colors} onPress={comingSoon} />
+            <GradientTopicCard
+              title={t(TOPIC_KEYS[topic.id] || topic.title)}
+              colors={topic.colors}
+              onPress={comingSoon}
+            />
           </View>
         ))}
       </View>
 
       <View style={styles.listSectionHeader}>
-        <SectionHeader title="Surahs" />
+        <SectionHeader title={t('discover.surahsSection')} />
       </View>
     </View>
   );
@@ -264,8 +295,8 @@ export default function SearchScreen({ navigation }) {
           ) : (
             <View style={styles.center}>
               <Ionicons name="search-outline" size={48} color={C.border} />
-              <Text style={styles.emptyText}>No surahs found</Text>
-              <Text style={styles.emptyHint}>Try the English name, meaning, or Arabic</Text>
+              <Text style={styles.emptyText}>{t('discover.noSurahsFound')}</Text>
+              <Text style={styles.emptyHint}>{t('discover.emptyHint')}</Text>
             </View>
           )
         }

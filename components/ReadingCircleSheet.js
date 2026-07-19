@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
+import { useI18n } from '../hooks/useI18n';
 import { light as hapticLight, medium as hapticMedium } from '../utils/haptics';
 import PillButton from './PillButton';
 
@@ -48,6 +49,7 @@ const makeStyles = (C) =>
 export default function ReadingCircleSheet({ circle, onAdd, onRemove }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const [name, setName] = useState('');
 
   const submit = () => {
@@ -60,29 +62,25 @@ export default function ReadingCircleSheet({ circle, onAdd, onRemove }) {
 
   return (
     <View style={styles.body}>
-      <Text style={styles.hint}>
-        A personal local list — just names you keep for yourself, like reading buddies or an
-        accountability circle. There are no real accounts behind this and nothing is shared or
-        synced anywhere.
-      </Text>
+      <Text style={styles.hint}>{t('profile.circleHint')}</Text>
 
       <View style={styles.addRow}>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
-          placeholder="Add a name…"
+          placeholder={t('profile.addNamePlaceholder')}
           placeholderTextColor={C.textSecondary}
           returnKeyType="done"
           onSubmitEditing={submit}
         />
-        <PillButton variant="primary" label="Add" onPress={submit} disabled={!name.trim()} />
+        <PillButton variant="primary" label={t('common.add')} onPress={submit} disabled={!name.trim()} />
       </View>
 
       {circle.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="people-outline" size={36} color={C.border} />
-          <Text style={styles.emptyText}>Your circle is empty — add a name above</Text>
+          <Text style={styles.emptyText}>{t('profile.circleEmpty')}</Text>
         </View>
       ) : (
         circle.map((entry) => (

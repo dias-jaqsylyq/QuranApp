@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
+import { useI18n } from '../hooks/useI18n';
 import { light as hapticLight, success as hapticSuccess } from '../utils/haptics';
 import {
   loadPlansWithReviews,
@@ -63,6 +64,7 @@ const makeStyles = (C) =>
 export default function HifzHomeScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const [plans, setPlans] = useState(null); // null = loading
   const [markOpen, setMarkOpen] = useState(false);
   const [markMounted, setMarkMounted] = useState(false);
@@ -77,8 +79,8 @@ export default function HifzHomeScreen({ navigation }) {
     if (markOpen) {
       setMarkMounted(true);
     } else if (markMounted) {
-      const t = setTimeout(() => setMarkMounted(false), CLOSE_DURATION);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => setMarkMounted(false), CLOSE_DURATION);
+      return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [markOpen, markMounted]);
@@ -100,10 +102,10 @@ export default function HifzHomeScreen({ navigation }) {
   };
 
   const removePlan = (planId) => {
-    Alert.alert('Delete plan?', 'Progress on this surah will be lost.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('hifz.deletePlanTitle'), t('hifz.deletePlanMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           hapticLight();
@@ -138,7 +140,7 @@ export default function HifzHomeScreen({ navigation }) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Memorization</Text>
+          <Text style={styles.headerTitle}>{t('hifz.title')}</Text>
         </View>
         <View style={styles.center}>
           <ActivityIndicator size="large" color={C.accent} />
@@ -153,20 +155,20 @@ export default function HifzHomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Memorization</Text>
+        <Text style={styles.headerTitle}>{t('hifz.title')}</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {plans.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="book-outline" size={40} color={C.border} />
-            <Text style={styles.emptyTitle}>Start memorizing your first surah</Text>
-            <Text style={styles.emptyText}>Pick a surah and a pace — the app will work out the rest.</Text>
+            <Text style={styles.emptyTitle}>{t('hifz.emptyTitle')}</Text>
+            <Text style={styles.emptyText}>{t('hifz.emptyText')}</Text>
           </View>
         ) : null}
 
         {memorizing.length > 0 ? (
           <>
-            <SectionHeader title="Currently Memorizing" />
+            <SectionHeader title={t('hifz.currentlyMemorizing')} />
             {memorizing.map((plan) => {
               const target = todayTarget(plan);
               const done = isDoneToday(plan);
@@ -188,13 +190,13 @@ export default function HifzHomeScreen({ navigation }) {
                   <View style={styles.cardBottomRow}>
                     {target ? (
                       <Text style={styles.targetText}>
-                        Today: ayahs {target.startAyah}–{target.endAyah}
+                        {t('home.segmentToday')}: {t('common.verses')} {target.startAyah}–{target.endAyah}
                       </Text>
                     ) : null}
                     {done ? (
-                      <Text style={styles.doneText}>Done ✓</Text>
+                      <Text style={styles.doneText}>{t('hifz.doneCheck')}</Text>
                     ) : (
-                      <PillButton variant="secondary" label="Done" icon="checkmark" onPress={() => markDone(plan.id)} />
+                      <PillButton variant="secondary" label={t('common.done')} icon="checkmark" onPress={() => markDone(plan.id)} />
                     )}
                   </View>
                 </TouchableOpacity>
@@ -205,7 +207,7 @@ export default function HifzHomeScreen({ navigation }) {
 
         {memorized.length > 0 ? (
           <>
-            <SectionHeader title="Reviews" />
+            <SectionHeader title={t('hifz.reviews')} />
             <View style={styles.memorizedList}>
               {memorized.map((plan, i) => {
                 const due = isReviewDueToday(plan);
@@ -218,17 +220,19 @@ export default function HifzHomeScreen({ navigation }) {
                     <View style={styles.memorizedTopRow}>
                       <Text style={styles.memorizedName}>{plan.surahNameEn}</Text>
                       {due ? (
-                        <Text style={styles.dueBadge}>Review</Text>
+                        <Text style={styles.dueBadge}>{t('hifz.reviewBadge')}</Text>
                       ) : (
-                        <Text style={styles.memorizedMeta}>{eta <= 0 ? 'today' : `in ${eta} day${eta === 1 ? '' : 's'}`}</Text>
+                        <Text style={styles.memorizedMeta}>
+                          {eta <= 0 ? t('home.segmentToday') : `in ${eta} day${eta === 1 ? '' : 's'}`}
+                        </Text>
                       )}
                     </View>
                     {due ? (
                       <View style={styles.memorizedButtonsRow}>
-                        <PillButton variant="secondary" label="Forgot" onPress={() => respondReview(plan.id, reviewForgot)} />
+                        <PillButton variant="secondary" label={t('hifz.forgot')} onPress={() => respondReview(plan.id, reviewForgot)} />
                         <PillButton
                           variant="secondary"
-                          label="Remembered"
+                          label={t('hifz.remembered')}
                           icon="checkmark"
                           onPress={() => respondReview(plan.id, reviewRemembered)}
                         />
@@ -241,10 +245,10 @@ export default function HifzHomeScreen({ navigation }) {
           </>
         ) : null}
 
-        <PillButton variant="primary" label="+ Add Surah" onPress={openAdd} style={styles.addBtn} />
+        <PillButton variant="primary" label={t('hifz.addSurahCta')} onPress={openAdd} style={styles.addBtn} />
 
         <TouchableOpacity style={styles.markLink} onPress={openMark}>
-          <Text style={styles.markLinkText}>Mark surahs already memorized</Text>
+          <Text style={styles.markLinkText}>{t('hifz.markAlreadyMemorized')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -255,7 +259,7 @@ export default function HifzHomeScreen({ navigation }) {
         statusBarTranslucent
         onRequestClose={() => setMarkOpen(false)}
       >
-        <Sheet visible={markOpen} onClose={() => setMarkOpen(false)} title="Already Memorized">
+        <Sheet visible={markOpen} onClose={() => setMarkOpen(false)} title={t('hifz.alreadyMemorizedSheet')}>
           <MarkMemorizedSheet existingPlans={plans} onSave={onMarkSaved} />
         </Sheet>
       </Modal>

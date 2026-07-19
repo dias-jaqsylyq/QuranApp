@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
 import { light as hapticLight } from '../utils/haptics';
+import { useI18n } from '../hooks/useI18n';
 
-// Screens that should take over the full screen with no floating tab bar,
-// regardless of which tab's nested stack they're pushed onto.
 const HIDDEN_ON_ROUTES = ['SurahReader'];
 
 const ICONS = {
@@ -16,6 +15,14 @@ const ICONS = {
   Memorize: ['repeat', 'repeat-outline'],
   Discover: ['search', 'search-outline'],
   You: ['person-circle', 'person-circle-outline'],
+};
+
+const TAB_KEYS = {
+  Home: 'tabs.home',
+  Quran: 'tabs.quran',
+  Memorize: 'tabs.memorize',
+  Discover: 'tabs.discover',
+  You: 'tabs.you',
 };
 
 const makeStyles = (C) =>
@@ -41,15 +48,17 @@ const makeStyles = (C) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      paddingHorizontal: 14,
+      paddingHorizontal: 10,
       height: 40,
       borderRadius: 20,
     },
     tabPillActive: { backgroundColor: C.surfaceGray },
+    tabLabel: { fontSize: 11, fontWeight: '600', color: C.textSecondary },
+    tabLabelActive: { color: C.text },
     dot: {
       position: 'absolute',
       top: 0,
-      right: '32%',
+      right: -2,
       width: 8,
       height: 8,
       borderRadius: 4,
@@ -59,6 +68,7 @@ const makeStyles = (C) =>
 
 export default function CustomTabBar({ state, navigation, insets }) {
   const C = useTheme();
+  const { t } = useI18n();
   const styles = useMemo(() => makeStyles(C), [C]);
 
   const focusedTabRoute = state.routes[state.index];
@@ -72,6 +82,7 @@ export default function CustomTabBar({ state, navigation, insets }) {
         {state.routes.map((route, index) => {
           const focused = index === state.index;
           const [activeIcon, inactiveIcon] = ICONS[route.name] ?? ['ellipse', 'ellipse-outline'];
+          const labelKey = TAB_KEYS[route.name];
 
           const onPress = () => {
             hapticLight();
@@ -82,12 +93,28 @@ export default function CustomTabBar({ state, navigation, insets }) {
           };
 
           return (
-            <Pressable key={route.key} style={styles.tab} onPress={onPress} accessibilityRole="tab" accessibilityState={focused ? { selected: true } : {}}>
+            <Pressable
+              key={route.key}
+              style={styles.tab}
+              onPress={onPress}
+              accessibilityRole="tab"
+              accessibilityLabel={labelKey ? t(labelKey) : route.name}
+              accessibilityState={focused ? { selected: true } : {}}
+            >
               <View style={[styles.tabPill, focused && styles.tabPillActive]}>
                 <View>
-                  <Ionicons name={focused ? activeIcon : inactiveIcon} size={22} color={focused ? C.text : C.textSecondary} />
+                  <Ionicons
+                    name={focused ? activeIcon : inactiveIcon}
+                    size={focused ? 18 : 22}
+                    color={focused ? C.text : C.textSecondary}
+                  />
                   {route.name === 'Home' && <View style={styles.dot} />}
                 </View>
+                {focused && labelKey ? (
+                  <Text style={[styles.tabLabel, styles.tabLabelActive]} numberOfLines={1}>
+                    {t(labelKey)}
+                  </Text>
+                ) : null}
               </View>
             </Pressable>
           );

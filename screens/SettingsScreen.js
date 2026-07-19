@@ -14,6 +14,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme, THEME_OPTIONS } from '../theme/colors';
 import { useSettings } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../hooks/useI18n';
 import { light as hapticLight, medium as hapticMedium } from '../utils/haptics';
 import { RECITERS, DEFAULT_RECITER } from '../data/reciters';
 import { AVATAR_KEY } from '../utils/avatarPicker';
@@ -63,7 +64,9 @@ const makeStyles = (C) =>
       gap: 8,
     },
     pillRowDivider: { borderTopWidth: 1, borderTopColor: C.separatorOnGray },
-    pillLabel: { fontSize: 15, color: C.text, fontWeight: '500', marginRight: 4 },
+    pillLabelCol: { marginRight: 4, maxWidth: '42%' },
+    pillLabel: { fontSize: 15, color: C.text, fontWeight: '500' },
+    pillSubtitle: { fontSize: 12, color: C.textSecondary, marginTop: 2, lineHeight: 16 },
     pillsWrap: { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 6 },
     pill: {
       paddingHorizontal: 14,
@@ -99,10 +102,15 @@ const makeStyles = (C) =>
   });
 
 const FONT_OPTIONS = [
-  { value: 'small',  label: 'Small' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'large',  label: 'Large' },
+  { value: 'small',  labelKey: 'settings.fontSmall' },
+  { value: 'medium', labelKey: 'settings.fontMedium' },
+  { value: 'large',  labelKey: 'settings.fontLarge' },
 ];
+
+const THEME_LABEL_KEYS = {
+  light: 'settings.themeLight',
+  dark: 'settings.themeDark',
+};
 
 const LANG_OPTIONS = [
   { value: 'en', label: 'EN' },
@@ -113,6 +121,7 @@ const LANG_OPTIONS = [
 export default function SettingsScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const {
     colorMode, setColorMode,
     fontSize, setFontSize,
@@ -143,17 +152,12 @@ export default function SettingsScreen({ navigation }) {
     navigation.goBack();
   };
 
-  const comingSoon = () => {
-    hapticLight();
-    Alert.alert('Coming soon');
-  };
-
   const handleSignOut = () => {
     hapticLight();
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('settings.signOut'), t('settings.signOutConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Sign Out',
+        text: t('settings.signOut'),
         style: 'destructive',
         onPress: async () => {
           hapticMedium();
@@ -167,12 +171,12 @@ export default function SettingsScreen({ navigation }) {
   const resetProfile = () => {
     hapticLight();
     Alert.alert(
-      'Reset Profile',
-      "This clears your name, avatar, bio, and local Reading Circle list. Your reading progress, bookmarks, and Khatm plans are not affected — there's no account to sign out of.",
+      t('settings.resetProfile'),
+      t('settings.resetProfileMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Reset',
+          text: t('common.reset'),
           style: 'destructive',
           onPress: async () => {
             hapticMedium();
@@ -187,12 +191,12 @@ export default function SettingsScreen({ navigation }) {
   const resetMemorization = () => {
     hapticLight();
     Alert.alert(
-      'Reset Your Progress',
-      'This wipes all memorization plans and review history. This cannot be undone.',
+      t('settings.resetProgress'),
+      t('settings.resetProgressMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Reset',
+          text: t('common.reset'),
           style: 'destructive',
           onPress: async () => {
             hapticMedium();
@@ -203,36 +207,39 @@ export default function SettingsScreen({ navigation }) {
     );
   };
 
+  const themeLabel = (opt) =>
+    t(opt.value == null ? 'settings.themeSystem' : (THEME_LABEL_KEYS[opt.value] || opt.label));
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={goBack}>
           <Ionicons name="chevron-back" size={24} color={C.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerTitle}>{t('settings.title')}</Text>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
         {/* ── Account ── */}
-        <SectionHeader title="Account" />
+        <SectionHeader title={t('settings.account')} />
         <View style={styles.card}>
-          <SettingsRow label="Edit Profile" chevron isFirst onPress={() => navigation.navigate('EditProfile')} />
-          <SettingsRow icon="refresh-outline" label="Reset Profile" destructive onPress={resetProfile} />
+          <SettingsRow label={t('settings.editProfile')} chevron isFirst onPress={() => navigation.navigate('EditProfile')} />
+          <SettingsRow icon="refresh-outline" label={t('settings.resetProfile')} destructive onPress={resetProfile} />
         </View>
 
         {isAuthenticated && (
           <View style={[styles.card, { marginTop: 16 }]}>
-            <SettingsRow icon="mail-outline" label="Signed in as" value={user?.email} isFirst />
-            <SettingsRow icon="log-out-outline" label="Sign Out" destructive onPress={handleSignOut} />
+            <SettingsRow icon="mail-outline" label={t('settings.signedInAs')} value={user?.email} isFirst />
+            <SettingsRow icon="log-out-outline" label={t('settings.signOut')} destructive onPress={handleSignOut} />
           </View>
         )}
 
         {/* ── General ── */}
-        <SectionHeader title="General" />
+        <SectionHeader title={t('settings.general')} />
         <View style={styles.card}>
           <View style={styles.themeRow}>
-            <Text style={styles.themeLabel}>Theme</Text>
+            <Text style={styles.themeLabel}>{t('settings.theme')}</Text>
             <View style={styles.themeOptions}>
               {THEME_OPTIONS.map(opt => {
                 const active = colorMode === opt.value;
@@ -249,7 +256,7 @@ export default function SettingsScreen({ navigation }) {
                       color={active ? C.accent : C.textSecondary}
                     />
                     <Text style={[styles.themeOptionText, active && styles.themeOptionTextActive]}>
-                      {opt.label}
+                      {themeLabel(opt)}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -259,10 +266,13 @@ export default function SettingsScreen({ navigation }) {
         </View>
 
         {/* ── Quran Reading ── */}
-        <SectionHeader title="Quran Reading" />
+        <SectionHeader title={t('settings.quranReading')} />
         <View style={styles.card}>
           <View style={styles.pillRow}>
-            <Text style={styles.pillLabel}>Translation</Text>
+            <View style={styles.pillLabelCol}>
+              <Text style={styles.pillLabel}>{t('settings.translation')}</Text>
+              <Text style={styles.pillSubtitle}>{t('settings.languageSubtitle')}</Text>
+            </View>
             <View style={styles.pillsWrap}>
               {LANG_OPTIONS.map(opt => {
                 const active = defaultLang === opt.value;
@@ -281,7 +291,7 @@ export default function SettingsScreen({ navigation }) {
           </View>
 
           <View style={[styles.pillRow, styles.pillRowDivider]}>
-            <Text style={styles.pillLabel}>Font Size</Text>
+            <Text style={styles.pillLabel}>{t('settings.fontSize')}</Text>
             <View style={styles.pillsWrap}>
               {FONT_OPTIONS.map(opt => {
                 const active = fontSize === opt.value;
@@ -292,7 +302,7 @@ export default function SettingsScreen({ navigation }) {
                     onPress={() => choose(setFontSize, opt.value)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.pillText, active && styles.pillTextActive]}>{opt.label}</Text>
+                    <Text style={[styles.pillText, active && styles.pillTextActive]}>{t(opt.labelKey)}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -301,7 +311,7 @@ export default function SettingsScreen({ navigation }) {
 
           <View style={styles.pillRowDivider}>
             <SettingsRow
-              label="Default Reciter"
+              label={t('settings.defaultReciter')}
               value={reciterName}
               chevron
               isFirst
@@ -311,10 +321,10 @@ export default function SettingsScreen({ navigation }) {
         </View>
 
         {/* ── Audio & Recitation ── */}
-        <SectionHeader title="Audio & Recitation" />
+        <SectionHeader title={t('settings.audioRecitation')} />
         <View style={styles.card}>
           <SettingsRow
-            label="Show Audio Progress Bar"
+            label={t('settings.showAudioProgressBar')}
             switchValue={showAudioProgress}
             onSwitchChange={setShowAudioProgress}
             isFirst
@@ -322,12 +332,12 @@ export default function SettingsScreen({ navigation }) {
         </View>
 
         {/* ── Quran Memorization ── */}
-        <SectionHeader title="Quran Memorization" />
+        <SectionHeader title={t('settings.quranMemorization')} />
         <View style={styles.card}>
           <SettingsRow
             icon="refresh-outline"
-            label="Reset Your Progress"
-            subtitle="Wipe all memorization data"
+            label={t('settings.resetProgress')}
+            subtitle={t('settings.resetProgressSubtitle')}
             destructive
             isFirst
             onPress={resetMemorization}
@@ -335,26 +345,16 @@ export default function SettingsScreen({ navigation }) {
         </View>
 
         {/* ── Sources ── */}
-        <SectionHeader title="Sources" />
+        <SectionHeader title={t('settings.sources')} />
         <View style={styles.card}>
           <View style={styles.ackRow}>
-            <Text style={styles.ackText}>
-              Quran text, translations, and metadata from{' '}
-              <Text style={styles.ackLink}>alquran.cloud</Text>
-            </Text>
+            <Text style={styles.ackText}>{t('settings.ackAlquran')}</Text>
           </View>
           <View style={[styles.ackRow, styles.ackDivider]}>
-            <Text style={styles.ackText}>
-              Audio recitations from{' '}
-              <Text style={styles.ackLink}>everyayah.com</Text>
-            </Text>
+            <Text style={styles.ackText}>{t('settings.ackEveryayah')}</Text>
           </View>
           <View style={[styles.ackRow, styles.ackDivider]}>
-            <Text style={styles.ackText}>
-              Arabic typography uses the{' '}
-              <Text style={styles.ackLink}>Amiri</Text>
-              {' '}font by Khaled Hosny (SIL Open Font License)
-            </Text>
+            <Text style={styles.ackText}>{t('settings.ackAmiri')}</Text>
           </View>
         </View>
 

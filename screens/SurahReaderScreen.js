@@ -23,6 +23,7 @@ import { RECITERS, DEFAULT_RECITER } from '../data/reciters';
 import { TRANSLATION_OPTIONS } from '../data/translations';
 import { useTheme, THEME_OPTIONS } from '../theme/colors';
 import { useSettings } from '../context/AppContext';
+import { useI18n } from '../hooks/useI18n';
 import { light, medium, success } from '../utils/haptics';
 import { stripTajweed, simplifyTranslit } from '../utils/quranText';
 import Sheet, { CLOSE_DURATION } from '../components/settings/Sheet';
@@ -35,10 +36,13 @@ import TranscriptionPanel from '../components/settings/TranscriptionPanel';
 import TranslationPanel from '../components/settings/TranslationPanel';
 import ReciterPanel from '../components/settings/ReciterPanel';
 import ColorThemePanel from '../components/settings/ColorThemePanel';
+import TafsirPanel from '../components/settings/TafsirPanel';
+import TafsirSheet from '../components/TafsirSheet';
 import PillButton from '../components/PillButton';
 import Stepper from '../components/Stepper';
 import { recordActiveToday, recordSurahFinished } from '../utils/profileStats';
 import { loadBookmarks, saveBookmarks } from '../utils/bookmarks';
+import { resolveEdition, DEFAULT_TAFSIR } from '../utils/tafsir';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -47,11 +51,17 @@ const FONT_SCALE = { small: 0.85, medium: 1.0, large: 1.2 };
 const HERO_GRADIENT = ['#0D1B2A', '#1A3A2A'];
 
 const SUB_PANELS = {
-  arabicFont: { title: 'Arabic Font' },
-  transcription: { title: 'Transcription' },
-  translation: { title: 'Translation' },
-  reciter: { title: 'Reciter / Voice' },
-  colorTheme: { title: 'Color Theme' },
+  arabicFont: 'reader.arabicFont',
+  transcription: 'reader.transcription',
+  translation: 'reader.translation',
+  tafsir: 'reader.tafsir',
+  reciter: 'reader.reciterVoice',
+  colorTheme: 'reader.colorTheme',
+};
+
+const THEME_LABEL_KEYS = {
+  light: 'settings.themeLight',
+  dark: 'settings.themeDark',
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -272,6 +282,19 @@ const makeStyles = (C, scale) =>
       lineHeight: Math.round(23 * scale),
       marginTop: 6,
     },
+    tafsirBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      gap: 6,
+      marginTop: 10,
+      paddingVertical: 4,
+    },
+    tafsirBtnText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: C.textSecondary,
+    },
 
     // Page-mode header title (tappable to open the page picker)
     pageHeaderBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -367,7 +390,8 @@ const makeStyles = (C, scale) =>
 export default function SurahReaderScreen({ route, navigation }) {
   const C = useTheme();
   const insets = useSafeAreaInsets();
-  const { fontSize, setFontSize, defaultLang, setDefaultLang, colorMode, setColorMode, showAudioProgress } = useSettings();
+  const { t } = useI18n();
+  const { fontSize, setFontSize, defaultLang, setDefaultLang, colorMode, setColorMode, showAudioProgress, tafsirId, tafsirSlug, setTafsirEdition } = useSettings();
   const scale = FONT_SCALE[fontSize] ?? 1.0;
   const styles = useMemo(() => makeStyles(C, scale), [C, scale]);
 
@@ -410,6 +434,8 @@ export default function SurahReaderScreen({ route, navigation }) {
   const [controlsVisible, setControlsVisible] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeSubPanel, setActiveSubPanel] = useState(null);
+  const [tafsirVerse, setTafsirVerse] = useState(null);
+  const [tafsirMounted, setTafsirMounted] = useState(false);
   // A single native Modal hosts both sheet layers (main panel + sub-panel);
   // stays mounted slightly past settingsOpen=false so Sheet's own close
   // animation can finish before the Modal itself is torn down.
@@ -446,6 +472,15 @@ export default function SurahReaderScreen({ route, navigation }) {
       return () => clearTimeout(t);
     }
   }, [pagePickerOpen, pagePickerMounted]);
+
+  useEffect(() => {
+    if (tafsirVerse) {
+      setTafsirMounted(true);
+    } else if (tafsirMounted) {
+      const t = setTimeout(() => setTafsirMounted(false), CLOSE_DURATION);
+      return () => clearTimeout(t);
+    }
+  }, [tafsirVerse, tafsirMounted]);
 
   const flatListRef = useRef(null);
   const stateRef = useRef({
@@ -813,43 +848,58 @@ export default function SurahReaderScreen({ route, navigation }) {
           />
         )}
         {showBismillahAbove && <BismillahBanner />}
-        <TouchableOpacity
-          style={[styles.verseRow, active && styles.verseRowActive]}
-          onPress={() => { revealControls(); loadAndPlayVerse(index); }}
-          onLongPress={() => bookmarkVerse(item)}
-          delayLongPress={400}
-          activeOpacity={0.7}
-        >
-          <View style={styles.verseHeader}>
-            <Text style={[styles.verseNumText, active && styles.verseNumTextActive]}>
-              {item.surahNumber}:{item.number}
-            </Text>
-            {justBookmarked && (
-              <View style={styles.bookmarkFlash}>
-                <Ionicons name="bookmark" size={11} color="#FFFFFF" />
-                <Text style={styles.bookmarkFlashText}>Saved</Text>
-              </View>
-            )}
-          </View>
+        <View style={[styles.verseRow, active && styles.verseRowActive]}>
+          <TouchableOpacity
+            onPress={() => { revealControls(); loadAndPlayVerse(index); }}
+            onLongPress={() => bookmarkVerse(item)}
+            delayLongPress={400}
+            activeOpacity={0.7}
+          >
+            <View style={styles.verseHeader}>
+              <Text style={[styles.verseNumText, active && styles.verseNumTextActive]}>
+                {item.surahNumber}:{item.number}
+              </Text>
+              {justBookmarked && (
+                <View style={styles.bookmarkFlash}>
+                  <Ionicons name="bookmark" size={11} color="#FFFFFF" />
+                  <Text style={styles.bookmarkFlashText}>Saved</Text>
+                </View>
+              )}
+            </View>
 
-          {showArabic && <Text style={styles.arabicText}>{item.arabicText}</Text>}
+            {showArabic && <Text style={styles.arabicText}>{item.arabicText}</Text>}
 
-          {showTranscriptionText ? (
-            <Text style={styles.transliterationText}>
-              {translitStyle === 'simple'
-                ? simplifyTranslit(item.transliteration)
-                : item.transliteration}
-            </Text>
-          ) : null}
+            {showTranscriptionText ? (
+              <Text style={styles.transliterationText}>
+                {translitStyle === 'simple'
+                  ? simplifyTranslit(item.transliteration)
+                  : item.transliteration}
+              </Text>
+            ) : null}
 
-          {showTranslationText && showTranscriptionText ? (
-            <View style={styles.verseDivider} />
-          ) : null}
+            {showTranslationText && showTranscriptionText ? (
+              <View style={styles.verseDivider} />
+            ) : null}
+
+            {showTranslationText ? (
+              <Text style={styles.translationText}>{translation}</Text>
+            ) : null}
+          </TouchableOpacity>
 
           {showTranslationText ? (
-            <Text style={styles.translationText}>{translation}</Text>
+            <TouchableOpacity
+              style={styles.tafsirBtn}
+              onPress={() => {
+                light();
+                setTafsirVerse(item);
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+            >
+              <Ionicons name="book-outline" size={14} color={C.textSecondary} />
+              <Text style={styles.tafsirBtnText}>{t('tafsir.button')}</Text>
+            </TouchableOpacity>
           ) : null}
-        </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -857,6 +907,10 @@ export default function SurahReaderScreen({ route, navigation }) {
   const reciterName = RECITERS.find((r) => r.id === selectedReciterId)?.name ?? DEFAULT_RECITER.name;
   const translationOpt = TRANSLATION_OPTIONS.find((o) => o.key === defaultLang);
   const themeOpt = THEME_OPTIONS.find((o) => o.value === colorMode) ?? THEME_OPTIONS[1];
+  const themeLabel = themeOpt.value == null
+    ? t('settings.themeSystem')
+    : t(THEME_LABEL_KEYS[themeOpt.value] || themeOpt.label);
+  const tafsirEdition = resolveEdition(tafsirId, tafsirSlug);
 
   // Mushaf is a rendering style over the same page data as Page mode (see
   // selectReadingMode) — only meaningful once that data has actually loaded.
@@ -985,17 +1039,18 @@ export default function SurahReaderScreen({ route, navigation }) {
         onRequestClose={() => (activeSubPanel ? setActiveSubPanel(null) : closeSettings())}
       >
         <View style={{ flex: 1 }}>
-          <Sheet visible={settingsOpen} onClose={closeSettings} title="Settings">
+          <Sheet visible={settingsOpen} onClose={closeSettings} title={t('reader.settings')}>
             <ReaderSettingsPanel
               readingMode={readingMode}
               onSelectReadingMode={selectReadingMode}
               onNavigate={(key) => setActiveSubPanel(key)}
               rowSubtitles={{
                 arabicFont: 'Amiri',
-                transcription: translitStyle === 'simple' ? 'Simple' : 'Standard',
+                transcription: translitStyle === 'simple' ? t('reader.translitSimple') : t('reader.translitStandard'),
                 translation: translationOpt ? `${translationOpt.label} — ${translationOpt.translator}` : '',
+                tafsir: tafsirEdition.name,
                 reciter: reciterName,
-                colorTheme: themeOpt.label,
+                colorTheme: themeLabel,
               }}
               toggles={{ showArabic, showTranslation, showTranscription, showTajweed }}
               onToggleChange={toggleDisplayPref}
@@ -1005,7 +1060,7 @@ export default function SurahReaderScreen({ route, navigation }) {
           <Sheet
             visible={!!activeSubPanel}
             onClose={() => setActiveSubPanel(null)}
-            title={activeSubPanel ? SUB_PANELS[activeSubPanel].title : ''}
+            title={activeSubPanel ? t(SUB_PANELS[activeSubPanel]) : ''}
           >
             {activeSubPanel === 'arabicFont' && (
               <ArabicFontPanel fontSize={fontSize} onFontSizeChange={setFontSize} />
@@ -1025,6 +1080,15 @@ export default function SurahReaderScreen({ route, navigation }) {
                 fontSize={fontSize}
                 onFontSizeChange={setFontSize}
                 previewVerse={verses[0]}
+              />
+            )}
+            {activeSubPanel === 'tafsir' && (
+              <TafsirPanel
+                selectedId={tafsirId ?? DEFAULT_TAFSIR.id}
+                onSelectEdition={(item) => {
+                  setTafsirEdition({ id: item.id, slug: item.slug });
+                  setActiveSubPanel(null);
+                }}
               />
             )}
             {activeSubPanel === 'reciter' && (
@@ -1056,6 +1120,32 @@ export default function SurahReaderScreen({ route, navigation }) {
             />
           </View>
         </Sheet>
+      </Modal>
+
+      <Modal
+        transparent
+        visible={tafsirMounted}
+        animationType="none"
+        statusBarTranslucent
+        onRequestClose={() => setTafsirVerse(null)}
+      >
+        <TafsirSheet
+          visible={!!tafsirVerse}
+          onClose={() => setTafsirVerse(null)}
+          verse={tafsirVerse}
+          translation={
+            tafsirVerse
+              ? (defaultLang === 'en'
+                ? tafsirVerse.en
+                : defaultLang === 'ru'
+                  ? tafsirVerse.ru
+                  : tafsirVerse.kz)
+              : ''
+          }
+          tafsirId={tafsirId}
+          tafsirSlug={tafsirSlug}
+          onSelectEdition={setTafsirEdition}
+        />
       </Modal>
     </SafeAreaView>
   );

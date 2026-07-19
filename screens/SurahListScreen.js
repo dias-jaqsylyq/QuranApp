@@ -16,6 +16,7 @@ import { light } from '../utils/haptics';
 import { useSurahList } from '../hooks/useQuranData';
 import { useQuranPageIndex } from '../hooks/useQuranPageIndex';
 import { useTheme } from '../theme/colors';
+import { useI18n } from '../hooks/useI18n';
 import SectionHeader from '../components/SectionHeader';
 
 const SURAH_JUZ = [
@@ -166,6 +167,7 @@ const makeStyles = (C) =>
 export default function SurahListScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const listRef = useRef(null);
   const { surahs, loading, error } = useSurahList();
   const { index: pageIndex } = useQuranPageIndex();
@@ -213,13 +215,14 @@ export default function SurahListScreen({ navigation }) {
   };
 
   const renderSectionHeader = ({ section }) => (
-    <SectionHeader title={`Juz ${section.juz}`} />
+    <SectionHeader title={t('common.juzN', { n: section.juz })} />
   );
 
   const renderItem = ({ item }) => {
     const isMeccan = item.revelationType === 'Meccan';
     const badgeBg    = isMeccan ? C.meccan   : C.medinan;
     const badgeColor = isMeccan ? C.meccanText : C.medianText;
+    const revelationLabel = isMeccan ? t('quran.meccan') : t('quran.medinan');
 
     return (
       <TouchableOpacity
@@ -235,11 +238,11 @@ export default function SurahListScreen({ navigation }) {
           <Text style={styles.surahEnglish}>{item.englishNameTranslation}</Text>
           <View style={styles.rowMeta}>
             <Ionicons name="list-outline" size={12} color={C.accent} />
-            <Text style={styles.verseCount}>{item.numberOfAyahs} verses</Text>
+            <Text style={styles.verseCount}>{item.numberOfAyahs} {t('common.verses')}</Text>
           </View>
           {item.revelationType ? (
             <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-              <Text style={[styles.badgeText, { color: badgeColor }]}>{item.revelationType}</Text>
+              <Text style={[styles.badgeText, { color: badgeColor }]}>{revelationLabel}</Text>
             </View>
           ) : null}
         </View>
@@ -254,10 +257,10 @@ export default function SurahListScreen({ navigation }) {
     <SafeAreaView style={styles.outer}>
       <View style={styles.sheet}>
         <LinearGradient colors={['#0D1B2A', '#1A3A2A']} style={styles.heroCard}>
-          <Text style={styles.heroLabel}>The Quran</Text>
-          <Text style={styles.heroTitle}>Al-Qur'an Al-Kareem</Text>
+          <Text style={styles.heroLabel}>{t('quran.heroLabel')}</Text>
+          <Text style={styles.heroTitle}>{t('quran.heroTitle')}</Text>
           <Text style={styles.heroArabic}>القرآن الكريم</Text>
-          <Text style={styles.heroSubtitle}>114 Surahs · 30 Juz</Text>
+          <Text style={styles.heroSubtitle}>{t('quran.heroSubtitle')}</Text>
         </LinearGradient>
 
         {lastRead && (
@@ -278,9 +281,9 @@ export default function SurahListScreen({ navigation }) {
               <Ionicons name="play" size={16} color="#FFFFFF" />
             </View>
             <View style={styles.resumeTextWrap}>
-              <Text style={styles.resumeLabel}>Continue Reading</Text>
+              <Text style={styles.resumeLabel}>{t('quran.continueReading')}</Text>
               <Text style={styles.resumeSurah}>{lastRead.surahNameEn}</Text>
-              <Text style={styles.resumeVerse}>Verse {lastRead.verseIndex + 1}</Text>
+              <Text style={styles.resumeVerse}>{t('common.verseN', { n: lastRead.verseIndex + 1 })}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={C.accent} />
           </TouchableOpacity>
@@ -292,7 +295,7 @@ export default function SurahListScreen({ navigation }) {
           </View>
         ) : error ? (
           <View style={styles.center}>
-            <Text style={styles.errorTxt}>Failed to load. Check your connection.</Text>
+            <Text style={styles.errorTxt}>{t('common.failedToLoad')}</Text>
           </View>
         ) : (
           <View style={styles.contentArea}>

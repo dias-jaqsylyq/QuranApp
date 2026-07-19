@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../theme/colors';
+import { useI18n } from '../hooks/useI18n';
 import { light as hapticLight, success as hapticSuccess } from '../utils/haptics';
 import { useQuranPageIndex } from '../hooks/useQuranPageIndex';
 import {
@@ -115,6 +116,7 @@ const makeStyles = (C) =>
 export default function DailyKhatmScreen({ navigation }) {
   const C = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
+  const { t } = useI18n();
   const { index, loading: indexLoading } = useQuranPageIndex();
 
   const [plan, setPlan] = useState(undefined); // undefined = loading, null = no plan
@@ -185,11 +187,11 @@ export default function DailyKhatmScreen({ navigation }) {
 
   const confirmReset = () => {
     Alert.alert(
-      'Reset Khatm Plan',
-      'This will end your current plan so you can start a new one. Your progress on this plan will not be kept.',
+      t('khatm.resetTitle'),
+      t('khatm.resetMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Reset', style: 'destructive', onPress: startNewKhatm },
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.reset'), style: 'destructive', onPress: startNewKhatm },
       ],
     );
   };
@@ -252,13 +254,11 @@ export default function DailyKhatmScreen({ navigation }) {
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.completeWrap}>
           <Ionicons name="sparkles-outline" size={48} color={C.gold} />
-          <Text style={styles.completeTitle}>Khatm Complete</Text>
-          <Text style={styles.completeSubtitle}>
-            You've finished reading the entire range you set. May it be accepted.
-          </Text>
+          <Text style={styles.completeTitle}>{t('khatm.completeTitle')}</Text>
+          <Text style={styles.completeSubtitle}>{t('khatm.completeSubtitle')}</Text>
           <PillButton
             variant="primary"
-            label="Start a New Khatm"
+            label={t('khatm.startNewKhatm')}
             icon="refresh"
             onPress={startNewKhatm}
             style={styles.completeCta}
@@ -274,15 +274,15 @@ export default function DailyKhatmScreen({ navigation }) {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.introWrap}>
             <Ionicons name="checkmark-done-circle-outline" size={40} color={C.accent} />
-            <Text style={styles.introTitle}>Set Your Pace</Text>
+            <Text style={styles.introTitle}>{t('khatm.setYourPace')}</Text>
             <Text style={styles.introSubtitle}>
-              Plan a steady daily rhythm to complete the Qur'an — {TOTAL_PAGES} pages, start to finish.
+              {t('khatm.introSubtitle', { pages: TOTAL_PAGES })}
             </Text>
           </View>
 
           <View style={[styles.card, { marginTop: 24 }]}>
             <Stepper
-              label="Days to Finish"
+              label={t('khatm.daysToFinish')}
               value={setupDays}
               min={1}
               max={totalPagesInSetupRange}
@@ -290,7 +290,7 @@ export default function DailyKhatmScreen({ navigation }) {
             />
             <View style={styles.cardDivider} />
             <Stepper
-              label="Pages per Day"
+              label={t('khatm.pagesPerDay')}
               value={setupPagesPerDay}
               min={1}
               max={totalPagesInSetupRange}
@@ -299,14 +299,14 @@ export default function DailyKhatmScreen({ navigation }) {
             <View style={styles.cardDivider} />
             <View style={styles.estimateRow}>
               <Ionicons name="flag-outline" size={14} color={C.textSecondary} />
-              <Text style={styles.estimateText}>Finish around {formatFinishDate(setupDays)}</Text>
+              <Text style={styles.estimateText}>{t('khatm.finishAround', { date: formatFinishDate(setupDays) })}</Text>
             </View>
           </View>
 
-          <Text style={styles.sectionLabel}>Reading Range</Text>
+          <Text style={styles.sectionLabel}>{t('khatm.readingRange')}</Text>
           <View style={styles.card}>
             <Stepper
-              label="From Juz"
+              label={t('khatm.fromJuz')}
               value={setupFromJuz}
               min={1}
               max={setupToJuz}
@@ -314,7 +314,7 @@ export default function DailyKhatmScreen({ navigation }) {
             />
             <View style={styles.cardDivider} />
             <Stepper
-              label="To Juz"
+              label={t('khatm.toJuz')}
               value={setupToJuz}
               min={setupFromJuz}
               max={TOTAL_JUZ}
@@ -323,11 +323,11 @@ export default function DailyKhatmScreen({ navigation }) {
             <View style={styles.cardDivider} />
             <View style={styles.estimateRow}>
               <Ionicons name="book-outline" size={14} color={C.textSecondary} />
-              <Text style={styles.estimateText}>{totalPagesInSetupRange} pages in this range</Text>
+              <Text style={styles.estimateText}>{t('khatm.pagesInRange', { count: totalPagesInSetupRange })}</Text>
             </View>
           </View>
 
-          <PillButton variant="primary" label="Start My Khatm" icon="checkmark-done" onPress={startPlan} style={styles.ctaBtn} />
+          <PillButton variant="primary" label={t('khatm.startMyKhatm')} icon="checkmark-done" onPress={startPlan} style={styles.ctaBtn} />
         </ScrollView>
       </SafeAreaView>
     );
@@ -337,25 +337,25 @@ export default function DailyKhatmScreen({ navigation }) {
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={HERO_GRADIENT} style={styles.heroCard}>
-          <Text style={styles.heroLabel}>Daily Khatm</Text>
+          <Text style={styles.heroLabel}>{t('khatm.heroLabel')}</Text>
           <Text style={styles.heroPercent}>{pctComplete}%</Text>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${pctComplete}%` }]} />
           </View>
           <Text style={styles.heroSubtitle}>
-            {pagesRead} of {pagesTotal} pages · {plan.pagesPerDay} pages/day pace
+            {t('khatm.pagesPace', { read: pagesRead, total: pagesTotal, perDay: plan.pagesPerDay })}
           </Text>
         </LinearGradient>
 
         <View style={styles.goalCard}>
-          <Text style={styles.goalLabel}>Today's Goal</Text>
+          <Text style={styles.goalLabel}>{t('khatm.todaysGoal')}</Text>
           {todayTarget ? (
             <>
               <Text style={styles.goalRange}>{formatTargetRange(todayTarget)}</Text>
               <Text style={styles.goalPages}>
                 {todayTarget.startPage === todayTarget.endPage
-                  ? `Page ${todayTarget.startPage}`
-                  : `Pages ${todayTarget.startPage}–${todayTarget.endPage}`}
+                  ? t('common.pageN', { n: todayTarget.startPage })
+                  : t('common.pagesRange', { start: todayTarget.startPage, end: todayTarget.endPage })}
               </Text>
             </>
           ) : null}
@@ -363,15 +363,15 @@ export default function DailyKhatmScreen({ navigation }) {
           {isDoneToday && (
             <View style={styles.doneRow}>
               <Ionicons name="checkmark-circle" size={16} color={C.accent} />
-              <Text style={styles.doneText}>Done for today — see you tomorrow</Text>
+              <Text style={styles.doneText}>{t('khatm.doneForToday')}</Text>
             </View>
           )}
 
           <View style={styles.goalActions}>
-            <PillButton variant="primary" label="Start Reading" icon="play" onPress={startReading} style={{ flex: 1 }} />
+            <PillButton variant="primary" label={t('khatm.startReading')} icon="play" onPress={startReading} style={{ flex: 1 }} />
             <PillButton
               variant="secondary"
-              label={isDoneToday ? 'Marked' : 'Mark as Read'}
+              label={isDoneToday ? t('khatm.marked') : t('khatm.markAsRead')}
               icon={isDoneToday ? 'checkmark-circle' : 'checkmark-circle-outline'}
               onPress={markAsRead}
               disabled={isDoneToday}
@@ -381,12 +381,12 @@ export default function DailyKhatmScreen({ navigation }) {
         </View>
 
         <View style={styles.statRow}>
-          <StatCard value={pagesRead} label="Pages Read" icon="book-outline" />
-          <StatCard value={pagesLeft} label="Pages Left" icon="hourglass-outline" />
+          <StatCard value={pagesRead} label={t('khatm.pagesRead')} icon="book-outline" />
+          <StatCard value={pagesLeft} label={t('khatm.pagesLeft')} icon="hourglass-outline" />
         </View>
 
         <TouchableOpacity style={styles.resetLink} onPress={confirmReset}>
-          <Text style={styles.resetLinkText}>Reset Plan</Text>
+          <Text style={styles.resetLinkText}>{t('khatm.resetPlan')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
